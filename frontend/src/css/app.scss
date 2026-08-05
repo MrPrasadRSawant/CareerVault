@@ -1,15 +1,27 @@
 // app global css
 
 :root {
-  --cv-primary: #219ebc;
-  --cv-secondary: #8ecae6;
-  --cv-navy: #023047;
-  --cv-amber: #ffb703;
-  --cv-orange: #fb8500;
+  --cv-primary: #1f6f8b;
+  --cv-secondary: #6c8e9e;
+  --cv-navy: #102a43;
+  --cv-amber: #d99a2b;
+  --cv-orange: #b7791f;
+  --cv-page: #f5f8fa;
+  --cv-border: #dce6eb;
+  --cv-text: #243b53;
+  --cv-muted: #627d98;
+}
+
+html {
+  color-scheme: light;
 }
 
 body {
-  background-color: #f8fafc;
+  background-color: var(--cv-page);
+  color: var(--cv-text);
+  font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {

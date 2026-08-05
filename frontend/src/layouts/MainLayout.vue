@@ -8,7 +8,9 @@
           dense
           icon="menu"
           color="white"
-          aria-label="Menu"
+          aria-label="Open navigation menu"
+          aria-controls="mobile-navigation-drawer"
+          :aria-expanded="leftDrawerOpen"
           class="header-hamburger"
           @click="toggleLeftDrawer"
         />
@@ -25,7 +27,7 @@
           <span>Career<span class="brand-accent">Vault</span></span>
         </div>
 
-        <q-space class="gt-md" />
+        <q-space />
 
         <nav class="header-nav" aria-label="Primary">
           <q-btn
@@ -76,6 +78,7 @@
             no-caps
             class="user-menu"
             content-class="nav-menu user-menu-card"
+            aria-label="Open profile menu"
           >
             <template #label>
               <div class="user-chip">
@@ -95,6 +98,9 @@
 
             <q-list padding>
               <q-item class="user-menu-header">
+                <q-item-section avatar>
+                  <q-avatar size="42px" class="profile-avatar">{{ userInitials }}</q-avatar>
+                </q-item-section>
                 <q-item-section>
                   <q-item-label class="user-menu-name">
                     {{ auth.user.full_name }}
@@ -102,16 +108,34 @@
                   <q-item-label caption class="user-menu-email">
                     {{ auth.user.email }}
                   </q-item-label>
+                  <q-item-label caption class="user-menu-account">Personal account</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-icon name="verified_user" color="positive" size="18px" />
                 </q-item-section>
               </q-item>
 
               <q-separator spaced />
 
-              <q-item clickable v-ripple @click="onLogout">
+              <q-item clickable v-ripple to="/settings" exact class="profile-menu-item">
+                <q-item-section avatar>
+                  <q-icon name="settings" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Settings</q-item-label>
+                  <q-item-label caption>API keys and AI Actions</q-item-label>
+                </q-item-section>
+                <q-item-section side><q-icon name="chevron_right" size="18px" /></q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple class="profile-menu-item profile-menu-item--danger" @click="onLogout">
                 <q-item-section avatar>
                   <q-icon name="logout" />
                 </q-item-section>
-                <q-item-section>Logout</q-item-section>
+                <q-item-section>
+                  <q-item-label>Sign out</q-item-label>
+                  <q-item-label caption>End this session</q-item-label>
+                </q-item-section>
               </q-item>
             </q-list>
           </q-btn-dropdown>
@@ -120,52 +144,41 @@
     </q-header>
 
     <q-drawer
+      id="mobile-navigation-drawer"
       v-model="leftDrawerOpen"
-      class="app-drawer"
       :width="240"
-      :breakpoint="767"
-      overlay
+      :breakpoint="1023"
+      behavior="mobile"
+      dark
+      aria-label="Mobile navigation"
     >
-      <div class="drawer-brand">
-        <div class="drawer-brand-mark">
-          <q-icon name="rocket_launch" size="16px" />
-        </div>
-        <span>Career<span class="brand-accent">Vault</span></span>
-      </div>
-
-      <q-scroll-area class="drawer-scroll">
-        <q-list padding>
-          <q-item-label header class="drawer-section-label">
-            Menu
-          </q-item-label>
-
-          <q-item
-            v-for="item in dashboardItems"
-            :key="item.name"
-            clickable
-            v-ripple
-            :to="item.to"
-            :active="isActive(item.name)"
-            active-class="menu-item--active"
-            class="menu-item"
-            exact
+      <div class="drawer-content">
+        <div class="drawer-brand">
+          <div class="drawer-brand-mark">
+            <q-icon name="rocket_launch" size="16px" />
+          </div>
+          <span>Career<span class="brand-accent">Vault</span></span>
+          <q-space />
+          <q-btn
+            flat
+            round
+            dense
+            icon="close"
+            color="white"
+            aria-label="Close navigation menu"
+            class="drawer-close"
             @click="leftDrawerOpen = false"
-          >
-            <q-item-section avatar>
-              <q-icon :name="item.icon" />
-            </q-item-section>
-            <q-item-section>
-              {{ item.label }}
-            </q-item-section>
-          </q-item>
+          />
+        </div>
 
-          <template v-for="group in navGroups" :key="group.label">
+        <q-scroll-area class="drawer-scroll">
+          <q-list padding>
             <q-item-label header class="drawer-section-label">
-              {{ group.label }}
+              Menu
             </q-item-label>
 
             <q-item
-              v-for="item in group.items"
+              v-for="item in dashboardItems"
               :key="item.name"
               clickable
               v-ripple
@@ -183,13 +196,39 @@
                 {{ item.label }}
               </q-item-section>
             </q-item>
-          </template>
-        </q-list>
-      </q-scroll-area>
 
-      <div class="drawer-footer">
-        <q-icon name="copyright" size="14px" />
-        {{ currentYear }} CareerVault
+            <template v-for="group in navGroups" :key="group.label">
+              <q-item-label header class="drawer-section-label">
+                {{ group.label }}
+              </q-item-label>
+
+              <q-item
+                v-for="item in group.items"
+                :key="item.name"
+                clickable
+                v-ripple
+                :to="item.to"
+                :active="isActive(item.name)"
+                active-class="menu-item--active"
+                class="menu-item"
+                exact
+                @click="leftDrawerOpen = false"
+              >
+                <q-item-section avatar>
+                  <q-icon :name="item.icon" />
+                </q-item-section>
+                <q-item-section>
+                  {{ item.label }}
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-list>
+        </q-scroll-area>
+
+        <div class="drawer-footer">
+          <q-icon name="copyright" size="14px" />
+          {{ currentYear }} CareerVault
+        </div>
       </div>
     </q-drawer>
 
@@ -200,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
@@ -223,6 +262,7 @@ const route = useRoute();
 
 const currentYear = new Date().getFullYear();
 const leftDrawerOpen = ref(false);
+const userInitials = computed(() => auth.user?.full_name?.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "CV");
 
 const navGroups: NavGroup[] = [
   {
@@ -241,12 +281,6 @@ const navGroups: NavGroup[] = [
         icon: "assignment",
         to: "/applications"
       },
-      {
-        name: "companies",
-        label: "Companies",
-        icon: "business",
-        to: "/companies"
-      }
     ]
   },
   {
@@ -464,13 +498,25 @@ function onLogout() {
   color: #8ecae6;
 }
 
-.user-menu-card {
-  min-width: 240px;
+:global(.user-menu-card) {
+  min-width: 292px;
+  padding: 8px;
+  border: 1px solid rgba(16, 42, 67, 0.08);
+  background: #fff;
 }
 
 .user-menu-header {
-  background: #f6fafc;
+  padding: 12px 10px;
+  background: linear-gradient(135deg, #f1f8fb 0%, #f8fbfc 100%);
   border-radius: 10px;
+}
+
+.profile-avatar {
+  color: #fff;
+  background: linear-gradient(135deg, #1f6f8b 0%, #219ebc 100%);
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(31, 111, 139, 0.22);
 }
 
 .user-menu-name {
@@ -482,10 +528,51 @@ function onLogout() {
   color: #6b8a99;
 }
 
-.app-drawer {
+.user-menu-account {
+  margin-top: 3px;
+  color: #8a9eaa;
+  font-size: 10px;
+}
+
+.profile-menu-item {
+  min-height: 56px;
+  margin: 4px 0;
+  border-radius: 9px;
+  color: #243b53;
+
+  &:hover {
+    background: #f1f8fb;
+  }
+
+  :deep(.q-item__label--caption) {
+    margin-top: 2px;
+    color: #829ab1;
+    font-size: 11px;
+  }
+
+  :deep(.q-icon) {
+    color: #1f6f8b;
+  }
+}
+
+.profile-menu-item--danger {
+  color: #b42318;
+
+  &:hover {
+    background: #fff4f2;
+  }
+
+  :deep(.q-icon) {
+    color: #d64545;
+  }
+}
+
+.drawer-content {
+  height: 100%;
   background: #023047;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .drawer-brand {
@@ -512,6 +599,7 @@ function onLogout() {
 
 .drawer-scroll {
   flex: 1;
+  min-height: 0;
 }
 
 .drawer-section-label {

@@ -1,7 +1,7 @@
 from app.models.application import Application
+from app.models.api_key import ApiKey
 from app.models.application_status_history import ApplicationStatusHistory
 from app.models.base import Base
-from app.models.company import Company
 from app.models.cover_letter import CoverLetter
 from app.models.enums import (
     ApplicationStatus,
@@ -18,10 +18,10 @@ from app.models.user import User
 
 __all__ = [
     "Application",
+    "ApiKey",
     "ApplicationStatus",
     "ApplicationStatusHistory",
     "Base",
-    "Company",
     "CoverLetter",
     "FollowUp",
     "FollowUpStatus",

@@ -1,14 +1,21 @@
 <template>
-  <div class="bars-wrap">
-    <div v-for="(item, i) in data" :key="i" class="bar-row">
+  <div class="bars-wrap" role="list" aria-label="Application statuses">
+    <div v-for="(item, i) in data" :key="i" class="bar-row" role="listitem">
       <div class="bar-header">
         <span class="bar-label">{{ item.label }}</span>
         <span class="bar-value">{{ item.value }}</span>
       </div>
-      <div class="bar-track">
+      <div
+        class="bar-track"
+        role="progressbar"
+        :aria-label="`${item.label}: ${item.value}`"
+        :aria-valuenow="item.percent"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
         <div
           class="bar-fill"
-          :style="{ width: item.percent + '%', background: item.color }"
+          :style="{ width: `${Math.min(100, Math.max(0, item.percent))}%`, background: item.color }"
         ></div>
       </div>
     </div>
@@ -32,7 +39,9 @@ defineProps<{
 .bars-wrap {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  min-height: 220px;
+  justify-content: center;
 }
 
 .bar-row {
@@ -49,6 +58,7 @@ defineProps<{
 
 .bar-label {
   font-size: 13.5px;
+  font-weight: 500;
   color: #475569;
 }
 
@@ -59,16 +69,17 @@ defineProps<{
 }
 
 .bar-track {
-  height: 8px;
-  border-radius: 4px;
+  height: 9px;
+  border-radius: 5px;
   background: #eef2f6;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s ease;
+  min-width: 2px;
+  border-radius: 5px;
+  transition: width 0.5s ease;
 }
 
 .bars-empty {

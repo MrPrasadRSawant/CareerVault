@@ -10,7 +10,9 @@ export type { Opportunity, OpportunityCreate, OpportunityStatus };
 export const opportunityApi = {
   list(status?: OpportunityStatus): Promise<Opportunity[]> {
     return api
-      .get("/opportunities", { params: status ? { status } : {} })
+      .get("/opportunities", {
+        params: status ? { status, limit: 500 } : { limit: 500 }
+      })
       .then(r => r.data);
   },
 

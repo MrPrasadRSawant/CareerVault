@@ -14,7 +14,7 @@
         <div class="row-title">{{ item.title }}</div>
         <div class="row-sub">{{ statusLabel(item.status) }}</div>
       </div>
-      <span class="row-date">{{ formatDate(item.created_at) }}</span>
+      <span class="row-date">{{ formatDate(item.created_on_utc) }}</span>
     </router-link>
   </div>
   <div v-else class="empty-state">

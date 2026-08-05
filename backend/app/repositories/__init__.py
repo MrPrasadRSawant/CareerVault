@@ -1,6 +1,6 @@
 from app.repositories.application_repository import ApplicationRepository
+from app.repositories.api_key_repository import ApiKeyRepository
 from app.repositories.base import BaseRepository
-from app.repositories.company_repository import CompanyRepository
 from app.repositories.cover_letter_repository import CoverLetterRepository
 from app.repositories.follow_up_repository import FollowUpRepository
 from app.repositories.interview_repository import InterviewRepository
@@ -11,9 +11,9 @@ from app.repositories.user_repository import UserRepository
 
 __all__ = [
     "ApplicationRepository",
+    "ApiKeyRepository",
     "ApplicationStatusHistoryRepository",
     "BaseRepository",
-    "CompanyRepository",
     "CoverLetterRepository",
     "FollowUpRepository",
     "InterviewRepository",

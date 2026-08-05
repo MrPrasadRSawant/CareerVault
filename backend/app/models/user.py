@@ -12,10 +12,12 @@ class User(UuidPk, Base, TimestampMixin):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    companies = relationship("Company", back_populates="user", cascade="all, delete-orphan")
     opportunities = relationship(
-        "JobOpportunity", back_populates="user", cascade="all, delete-orphan"
+        "JobOpportunity",
+        cascade="all, delete-orphan",
+        foreign_keys="JobOpportunity.created_by",
     )
+    api_keys = relationship("ApiKey", back_populates="user", cascade="all, delete-orphan")
     applications = relationship(
         "Application", back_populates="user", cascade="all, delete-orphan"
     )

@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
 from pydantic import Field
 
@@ -9,47 +9,47 @@ from app.schemas.common import ORMModel
 
 class OpportunityCreate(ORMModel):
     title: str = Field(min_length=1, max_length=255)
-    company_id: uuid.UUID | None = None
+    company_name: str | None = Field(default=None, max_length=255)
+    post_url: str | None = Field(default=None, max_length=500)
+    company_career_page: str | None = Field(default=None, max_length=500)
+    company_url: str | None = Field(default=None, max_length=500)
+    posted_on_utc: datetime | None = None
+    job_location: str | None = Field(default=None, max_length=255)
     description: str | None = None
-    application_link: str | None = Field(default=None, max_length=500)
-    salary_range: str | None = Field(default=None, max_length=100)
     required_skills: list[str] | None = None
     experience_level: str | None = Field(default=None, max_length=100)
     status: OpportunityStatus = OpportunityStatus.SAVED
-    source: str | None = Field(default=None, max_length=255)
-    posted_date: date | None = None
-    deadline: date | None = None
-    notes: str | None = None
 
 
 class OpportunityUpdate(ORMModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
-    company_id: uuid.UUID | None = None
+    company_name: str | None = Field(default=None, max_length=255)
+    post_url: str | None = Field(default=None, max_length=500)
+    company_career_page: str | None = Field(default=None, max_length=500)
+    company_url: str | None = Field(default=None, max_length=500)
+    posted_on_utc: datetime | None = None
+    job_location: str | None = Field(default=None, max_length=255)
     description: str | None = None
-    application_link: str | None = Field(default=None, max_length=500)
-    salary_range: str | None = Field(default=None, max_length=100)
     required_skills: list[str] | None = None
     experience_level: str | None = Field(default=None, max_length=100)
     status: OpportunityStatus | None = None
-    source: str | None = Field(default=None, max_length=255)
-    posted_date: date | None = None
-    deadline: date | None = None
-    notes: str | None = None
 
 
 class OpportunityRead(ORMModel):
     id: uuid.UUID
-    company_id: uuid.UUID | None
     title: str
+    company_name: str | None
+    post_url: str | None
+    company_career_page: str | None
+    company_url: str | None
+    posted_on_utc: datetime | None
+    job_location: str | None
     description: str | None
-    application_link: str | None
-    salary_range: str | None
     required_skills: list[str] | None
     experience_level: str | None
     status: OpportunityStatus
-    source: str | None
-    posted_date: date | None
-    deadline: date | None
-    notes: str | None
-    created_at: datetime
-    updated_at: datetime
+    created_by: uuid.UUID
+    created_on_utc: datetime
+    updated_by: uuid.UUID
+    updated_on_utc: datetime
+    is_deleted: bool

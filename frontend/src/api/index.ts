@@ -1,10 +1,8 @@
 export { authApi } from "./auth";
 export type { TokenWithUser, User } from "./auth";
 
-export { companyApi } from "./companies";
-export type { Company, CompanyCreate } from "./companies";
-
 export { opportunityApi } from "./opportunities";
+export { apiKeyApi } from "./apiKeys";
 export type {
   Opportunity,
   OpportunityCreate,

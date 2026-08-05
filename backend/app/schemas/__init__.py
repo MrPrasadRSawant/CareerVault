@@ -5,9 +5,10 @@ from app.schemas.application import (
     ApplicationStatusUpdate,
     ApplicationUpdate,
 )
+from app.schemas.ai_actions import AiOpportunityBatchCreate, AiOpportunityCreate, AiOpportunityUpdate
+from app.schemas.api_key import ApiKeyCreate, ApiKeyCreated, ApiKeyRead, ApiKeyUpdate
 from app.schemas.auth import LoginRequest, Token, TokenWithUser
 from app.schemas.common import Message, ORMModel
-from app.schemas.company import CompanyCreate, CompanyRead, CompanyUpdate
 from app.schemas.cover_letter import CoverLetterCreate, CoverLetterRead, CoverLetterUpdate
 from app.schemas.follow_up import FollowUpCreate, FollowUpRead, FollowUpUpdate
 from app.schemas.interview import InterviewCreate, InterviewRead, InterviewUpdate
@@ -25,9 +26,13 @@ __all__ = [
     "ApplicationStatusHistoryRead",
     "ApplicationStatusUpdate",
     "ApplicationUpdate",
-    "CompanyCreate",
-    "CompanyRead",
-    "CompanyUpdate",
+    "AiOpportunityBatchCreate",
+    "AiOpportunityCreate",
+    "AiOpportunityUpdate",
+    "ApiKeyCreate",
+    "ApiKeyCreated",
+    "ApiKeyRead",
+    "ApiKeyUpdate",
     "CoverLetterCreate",
     "CoverLetterRead",
     "CoverLetterUpdate",

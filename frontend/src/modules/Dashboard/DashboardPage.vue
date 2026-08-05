@@ -50,62 +50,71 @@
       <div class="row q-col-gutter-md">
         <div class="col-12 col-sm-6 col-md-3">
           <StatCard
-            icon="work"
-            label="Opportunities"
-            :value="totalOpportunities"
-            :hint="`${activeOpportunities} active`"
-            accent="#219EBC"
-            :to="{ name: 'opportunities' }"
-          />
-        </div>
-        <div class="col-12 col-sm-6 col-md-3">
-          <StatCard
             icon="assignment"
             label="Applications"
             :value="totalApplications"
-            :hint="`${offersCount} offers`"
-            accent="#FB8500"
+            :hint="`${waitingForResponseCount} awaiting response`"
+            accent="#219EBC"
             :to="{ name: 'applications' }"
           />
         </div>
         <div class="col-12 col-sm-6 col-md-3">
           <StatCard
-            icon="event"
-            label="Upcoming Interviews"
-            :value="upcomingInterviewCount"
-            :hint="`${upcomingIn7Days} in next 7 days`"
-            accent="#FFB703"
+            icon="route"
+            label="Active pipeline"
+            :value="activePipelineCount"
+            :hint="`${interviewStageCount} at interview stage`"
+            accent="#2B6CB0"
             :to="{ name: 'applications' }"
           />
         </div>
         <div class="col-12 col-sm-6 col-md-3">
           <StatCard
-            icon="description"
-            label="Resumes"
-            :value="totalResumes"
-            :hint="`${activeResumes} active`"
-            accent="#8ECAE6"
-            :to="{ name: 'resumes' }"
+            icon="mark_email_read"
+            label="Response rate"
+            :value="responseRate"
+            value-suffix="%"
+            :hint="`${respondedApplications} responses received`"
+            accent="#D99A2B"
+            :to="{ name: 'applications' }"
+          />
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+          <StatCard
+            icon="event_available"
+            label="Interview conversion"
+            :value="interviewConversionRate"
+            value-suffix="%"
+            :hint="`${offersCount} offers so far`"
+            accent="#2F855A"
+            :to="{ name: 'applications' }"
           />
         </div>
       </div>
 
       <div class="row q-col-gutter-md q-mt-md">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-7">
           <div class="panel-card">
             <div class="panel-header">
-              <div class="panel-title">Opportunities by status</div>
+              <div>
+                <div class="panel-title">Application funnel</div>
+                <div class="panel-subtitle">
+                  Where applications are progressing or dropping off
+                </div>
+              </div>
             </div>
-            <StatusDonut
-              :data="opportunityByStatus"
-              :total="totalOpportunities"
-            />
+            <ApplicationFunnel :stages="applicationFunnel" />
           </div>
         </div>
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-5">
           <div class="panel-card">
             <div class="panel-header">
-              <div class="panel-title">Applications by status</div>
+              <div>
+                <div class="panel-title">Current pipeline</div>
+                <div class="panel-subtitle">
+                  {{ waitingForResponseCount }} waiting for a response
+                </div>
+              </div>
             </div>
             <StatusBars :data="applicationByStatus" />
           </div>
@@ -116,7 +125,7 @@
         <div class="col-12 col-md-6">
           <div class="panel-card">
             <div class="panel-header">
-              <div class="panel-title">Applications per week</div>
+              <div class="panel-title">Application activity</div>
               <div class="panel-note">Last 8 weeks</div>
             </div>
             <TrendChart :points="applicationsPerWeek" />
@@ -148,6 +157,7 @@
           <div class="panel-card">
             <div class="panel-header">
               <div class="panel-title">Pending follow-ups</div>
+              <div class="panel-note">{{ overdueFollowUpCount }} overdue</div>
             </div>
             <FollowUpsCard :items="pendingFollowUps" />
           </div>
@@ -162,8 +172,8 @@ import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useDashboard } from "./composables/useDashboard";
 import StatCard from "./components/StatCard.vue";
-import StatusDonut from "./components/StatusDonut.vue";
 import StatusBars from "./components/StatusBars.vue";
+import ApplicationFunnel from "./components/ApplicationFunnel.vue";
 import TrendChart from "./components/TrendChart.vue";
 import UpcomingInterviews from "./components/UpcomingInterviews.vue";
 import RecentOpportunities from "./components/RecentOpportunities.vue";
@@ -175,20 +185,21 @@ const {
   loading,
   error,
   load,
-  totalOpportunities,
-  activeOpportunities,
   totalApplications,
   offersCount,
-  upcomingInterviewCount,
-  upcomingIn7Days,
-  activeResumes,
-  totalResumes,
-  opportunityByStatus,
+  respondedApplications,
+  activePipelineCount,
+  waitingForResponseCount,
+  interviewStageCount,
+  responseRate,
+  interviewConversionRate,
   applicationByStatus,
+  applicationFunnel,
   applicationsPerWeek,
   recentOpportunities,
   upcomingInterviews,
-  pendingFollowUps
+  pendingFollowUps,
+  overdueFollowUpCount
 } = useDashboard();
 
 onMounted(load);
@@ -247,6 +258,12 @@ onMounted(load);
   font-size: 15px;
   font-weight: 600;
   color: #023047;
+}
+
+.panel-subtitle {
+  margin-top: 3px;
+  color: #829ab1;
+  font-size: 12px;
 }
 
 .panel-note {

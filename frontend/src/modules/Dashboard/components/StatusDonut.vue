@@ -1,12 +1,16 @@
 <template>
   <div class="donut-wrap">
-    <div class="donut-chart">
+    <div v-if="total > 0" class="donut-chart">
       <svg
         viewBox="0 0 42 42"
         class="donut-svg"
         role="img"
-        aria-label="Status distribution"
+        :aria-labelledby="`${chartId}-title ${chartId}-description`"
       >
+        <title :id="`${chartId}-title`">Status distribution</title>
+        <desc :id="`${chartId}-description`">
+          {{ total }} total opportunities grouped by status.
+        </desc>
         <circle
           cx="21"
           cy="21"
@@ -33,7 +37,7 @@
           {{ total }}
         </text>
         <text x="21" y="24.5" text-anchor="middle" class="donut-label">
-          total
+          TOTAL
         </text>
       </svg>
     </div>
@@ -51,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useId } from "vue";
 import type { StatusDatum } from "../composables/useDashboard";
 
 defineOptions({ name: "StatusDonut" });
@@ -61,13 +65,16 @@ const props = defineProps<{
   total: number;
 }>();
 
+const chartId = useId().replace(/:/g, "");
+
 const segments = computed(() => {
   let cumulative = 0;
   return props.data
     .filter(d => d.value > 0)
     .map(d => {
-      const seg = { ...d, length: d.percent, offset: cumulative };
-      cumulative += d.percent;
+      const length = props.total > 0 ? (d.value / props.total) * 100 : 0;
+      const seg = { ...d, length, offset: cumulative };
+      cumulative += length;
       return seg;
     });
 });
@@ -92,7 +99,9 @@ const segments = computed(() => {
 }
 
 .donut-segment {
-  transition: stroke-dasharray 0.4s ease;
+  transition:
+    stroke-dasharray 0.4s ease,
+    stroke-dashoffset 0.4s ease;
 }
 
 .donut-total {
@@ -109,10 +118,9 @@ const segments = computed(() => {
 }
 
 .donut-legend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
   width: 100%;
 }
 
@@ -121,6 +129,7 @@ const segments = computed(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
+  min-width: 0;
 }
 
 .legend-dot {
@@ -131,6 +140,9 @@ const segments = computed(() => {
 
 .legend-label {
   color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .legend-value {

@@ -82,14 +82,15 @@ export default defineConfig((/* ctx */) => {
     framework: {
       config: {
         brand: {
-          primary: "#219EBC",
-          secondary: "#8ECAE6",
-          accent: "#FB8500",
-          dark: "#023047",
-          positive: "#219EBC",
-          negative: "#C10015",
-          warning: "#FFB703",
-          info: "#8ECAE6"
+          // A calm, high-contrast palette suited to a professional career workspace.
+          primary: "#1F6F8B",
+          secondary: "#6C8E9E",
+          accent: "#D99A2B",
+          dark: "#102A43",
+          positive: "#2F855A",
+          negative: "#C53030",
+          warning: "#B7791F",
+          info: "#2B6CB0"
         }
       },
 

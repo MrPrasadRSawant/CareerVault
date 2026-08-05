@@ -2,11 +2,19 @@ import enum
 
 
 class OpportunityStatus(str, enum.Enum):
+    DRAFT = "draft"
     SAVED = "saved"
     APPLIED = "applied"
+    # Retained for records created before the candidate-focused lifecycle.
     INTERVIEWING = "interviewing"
     OFFERED = "offered"
+    FOLLOW_UP = "follow_up"
+    INTERVIEW_SCHEDULED = "interview_scheduled"
+    INTERVIEW_COMPLETED = "interview_completed"
+    OFFER = "offer"
     REJECTED = "rejected"
+    NOT_REPLIED = "not_replied"
+    ON_HOLD = "on_hold"
     ARCHIVED = "archived"
 
 

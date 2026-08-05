@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
@@ -34,10 +35,11 @@ def list_opportunities(
     stmt = (
         select(JobOpportunity)
         .where(
-            JobOpportunity.user_id == current_user.id,
+            JobOpportunity.created_by == current_user.id,
             JobOpportunity.status == status,
+            JobOpportunity.is_deleted.is_(False),
         )
-        .order_by(JobOpportunity.created_at.desc())
+        .order_by(JobOpportunity.created_on_utc.desc())
         .limit(limit)
         .offset(offset)
     )
@@ -50,8 +52,13 @@ def create_opportunity(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    now = datetime.now(timezone.utc)
     return OpportunityRepository(db).create(
-        user_id=current_user.id, **payload.model_dump()
+        created_by=current_user.id,
+        created_on_utc=now,
+        updated_by=current_user.id,
+        updated_on_utc=now,
+        **payload.model_dump()
     )
 
 
@@ -73,7 +80,12 @@ def update_opportunity(
 ):
     repo = OpportunityRepository(db)
     opportunity = repo.get_owned(current_user.id, opportunity_id)
-    return repo.update(opportunity, **payload.model_dump(exclude_unset=True))
+    return repo.update(
+        opportunity,
+        updated_by=current_user.id,
+        updated_on_utc=datetime.now(timezone.utc),
+        **payload.model_dump(exclude_unset=True),
+    )
 
 
 @router.delete("/{opportunity_id}", response_model=Message)
@@ -83,5 +95,10 @@ def delete_opportunity(
     current_user: User = Depends(get_current_user),
 ) -> Message:
     repo = OpportunityRepository(db)
-    repo.delete(repo.get_owned(current_user.id, opportunity_id))
+    repo.update(
+        repo.get_owned(current_user.id, opportunity_id),
+        updated_by=current_user.id,
+        updated_on_utc=datetime.now(timezone.utc),
+        is_deleted=True,
+    )
     return Message(detail="Opportunity deleted")

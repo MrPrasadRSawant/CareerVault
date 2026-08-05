@@ -6,7 +6,9 @@
     >
       <q-icon :name="icon" size="22px" />
     </div>
-    <div class="stat-value">{{ value }}</div>
+    <div class="stat-value">
+      {{ value }}<span v-if="valueSuffix" class="stat-value-suffix">{{ valueSuffix }}</span>
+    </div>
     <div class="stat-label">{{ label }}</div>
     <div class="stat-hint">{{ hint }}</div>
   </router-link>
@@ -21,6 +23,7 @@ defineProps<{
   icon: string;
   label: string;
   value: number;
+  valueSuffix?: string;
   hint: string;
   accent: string;
   to: RouteLocationRaw;
@@ -62,6 +65,12 @@ defineProps<{
   font-weight: 700;
   color: #023047;
   line-height: 1.1;
+}
+
+.stat-value-suffix {
+  margin-left: 2px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .stat-label {

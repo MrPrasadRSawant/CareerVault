@@ -35,11 +35,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/pages/ApplicationsPage.vue")
       },
       {
-        path: "companies",
-        name: "companies",
-        component: () => import("@/modules/Companies/CompaniesPage.vue")
-      },
-      {
         path: "cover-letters",
         name: "cover-letters",
         component: () => import("@/modules/CoverLetters/CoverLettersPage.vue")
@@ -48,6 +43,11 @@ const routes: RouteRecordRaw[] = [
         path: "resumes",
         name: "resumes",
         component: () => import("@/pages/ResumesPage.vue")
+      },
+      {
+        path: "settings",
+        name: "settings",
+        component: () => import("@/modules/Settings/SettingsPage.vue")
       }
     ]
   },

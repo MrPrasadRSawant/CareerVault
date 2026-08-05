@@ -37,6 +37,13 @@ export interface WeeklyPoint {
   value: number;
 }
 
+export interface FunnelDatum {
+  label: string;
+  value: number;
+  percent: number;
+  color: string;
+}
+
 function startOfWeek(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -107,6 +114,48 @@ export function useDashboard() {
 
   const totalApplications = computed(() => applications.value.length);
 
+  const respondedApplications = computed(
+    () =>
+      applications.value.filter(
+        a =>
+          a.status !== "applied" &&
+          a.status !== "withdrawn"
+      ).length
+  );
+
+  const activePipelineCount = computed(
+    () =>
+      applications.value.filter(
+        a => a.status !== "rejected" && a.status !== "withdrawn"
+      ).length
+  );
+
+  const waitingForResponseCount = computed(
+    () => applications.value.filter(a => a.status === "applied").length
+  );
+
+  const interviewStageCount = computed(
+    () =>
+      applications.value.filter(
+        a =>
+          a.status === "interview_scheduled" ||
+          a.status === "interview_completed" ||
+          a.status === "offer"
+      ).length
+  );
+
+  const responseRate = computed(() =>
+    totalApplications.value
+      ? Math.round((respondedApplications.value / totalApplications.value) * 100)
+      : 0
+  );
+
+  const interviewConversionRate = computed(() =>
+    totalApplications.value
+      ? Math.round((interviewStageCount.value / totalApplications.value) * 100)
+      : 0
+  );
+
   const offersCount = computed(
     () => applications.value.filter(a => a.status === "offer").length
   );
@@ -153,6 +202,20 @@ export function useDashboard() {
     )
   );
 
+  const applicationFunnel = computed<FunnelDatum[]>(() => {
+    const total = totalApplications.value;
+    const stages = [
+      { label: "Applications sent", value: total, color: "#1F6F8B" },
+      { label: "Responses received", value: respondedApplications.value, color: "#2B6CB0" },
+      { label: "Interview stage", value: interviewStageCount.value, color: "#D99A2B" },
+      { label: "Offers", value: offersCount.value, color: "#2F855A" }
+    ];
+    return stages.map(stage => ({
+      ...stage,
+      percent: total ? Math.round((stage.value / total) * 100) : 0
+    }));
+  });
+
   const applicationsPerWeek = computed<WeeklyPoint[]>(() => {
     const currentWeekStart = startOfWeek(new Date());
     const points: WeeklyPoint[] = [];
@@ -179,7 +242,7 @@ export function useDashboard() {
 
   const recentOpportunities = computed(() =>
     [...opportunities.value]
-      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .sort((a, b) => b.created_on_utc.localeCompare(a.created_on_utc))
       .slice(0, 5)
   );
 
@@ -212,6 +275,15 @@ export function useDashboard() {
       .slice(0, 5)
   );
 
+  const overdueFollowUpCount = computed(
+    () =>
+      followUps.value.filter(
+        followUp =>
+          followUp.status !== "completed" &&
+          new Date(followUp.scheduled_at).getTime() < Date.now()
+      ).length
+  );
+
   return {
     loading,
     error,
@@ -219,6 +291,12 @@ export function useDashboard() {
     totalOpportunities,
     activeOpportunities,
     totalApplications,
+    respondedApplications,
+    activePipelineCount,
+    waitingForResponseCount,
+    interviewStageCount,
+    responseRate,
+    interviewConversionRate,
     offersCount,
     upcomingInterviewCount,
     upcomingIn7Days,
@@ -226,9 +304,11 @@ export function useDashboard() {
     activeResumes,
     opportunityByStatus,
     applicationByStatus,
+    applicationFunnel,
     applicationsPerWeek,
     recentOpportunities,
     upcomingInterviews,
-    pendingFollowUps
+    pendingFollowUps,
+    overdueFollowUpCount
   };
 }
