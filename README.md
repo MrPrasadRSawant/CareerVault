@@ -295,7 +295,16 @@ http://localhost:9000
 
 ## Environment Variables
 
-Example backend environment variables:
+Environment variables are loaded from `backend/.env`. Copy the example file
+and adjust the values:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+The backend runs with sensible defaults (SQLite + a development secret) even
+without a `.env`, but you should configure PostgreSQL and a strong `SECRET_KEY`
+for real use.
 
 ```env
 APP_NAME=CareerVault
@@ -303,13 +312,19 @@ APP_ENV=development
 SECRET_KEY=replace-with-a-secure-secret-key
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=careervault
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/careervault
 
 FRONTEND_URL=http://localhost:9000
+```
+
+For quick local development without PostgreSQL, use `DATABASE_URL=sqlite:///./careervault.db`.
+
+## Docker
+
+A `docker-compose.yml` starts PostgreSQL, the backend, and the frontend:
+
+```bash
+docker compose up --build
 ```
 
 ## API Documentation

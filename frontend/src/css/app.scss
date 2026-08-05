@@ -1,0 +1,18 @@
+// app global css
+
+:root {
+  --cv-primary: #219ebc;
+  --cv-secondary: #8ecae6;
+  --cv-navy: #023047;
+  --cv-amber: #ffb703;
+  --cv-orange: #fb8500;
+}
+
+body {
+  background-color: #f8fafc;
+}
+
+::selection {
+  background: var(--cv-secondary);
+  color: var(--cv-navy);
+}
