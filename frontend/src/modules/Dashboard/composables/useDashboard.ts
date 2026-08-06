@@ -1,12 +1,12 @@
 import { computed, ref } from "vue";
 import { applicationApi } from "@/api/applications";
-import type { Application } from "@/api/applications";
+import type { Application, ApplicationStatus } from "@/api/applications";
 import { followUpApi } from "@/api/followUps";
 import type { FollowUp } from "@/api/followUps";
 import { interviewApi } from "@/api/interviews";
 import type { Interview } from "@/api/interviews";
 import { opportunityApi } from "@/api/opportunities";
-import type { Opportunity } from "@/api/opportunities";
+import type { Opportunity, OpportunityStatus } from "@/api/opportunities";
 import { resumeApi } from "@/api/resumes";
 import type { Resume } from "@/api/resumes";
 import {
@@ -44,6 +44,19 @@ export interface FunnelDatum {
   color: string;
 }
 
+export interface OpportunityReportFilters {
+  statuses: OpportunityStatus[];
+  company: string;
+  dateFrom: string;
+  dateTo: string;
+}
+
+export interface ApplicationReportFilters {
+  statuses: ApplicationStatus[];
+  dateFrom: string;
+  dateTo: string;
+}
+
 function startOfWeek(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -61,6 +74,18 @@ export function useDashboard() {
   const resumes = ref<Resume[]>([]);
   const interviews = ref<Interview[]>([]);
   const followUps = ref<FollowUp[]>([]);
+
+  const opportunityFilters = ref<OpportunityReportFilters>({
+    statuses: [],
+    company: "",
+    dateFrom: "",
+    dateTo: ""
+  });
+  const applicationFilters = ref<ApplicationReportFilters>({
+    statuses: [],
+    dateFrom: "",
+    dateTo: ""
+  });
 
   async function load() {
     loading.value = true;
@@ -103,40 +128,125 @@ export function useDashboard() {
     });
   }
 
-  const totalOpportunities = computed(() => opportunities.value.length);
+  function isWithinDateRange(value: string | null, from: string, to: string) {
+    if (!value) return !from && !to;
+    const date = value.slice(0, 10);
+    return (!from || date >= from) && (!to || date <= to);
+  }
+
+  const filteredOpportunities = computed(() => {
+    const filters = opportunityFilters.value;
+    return opportunities.value.filter(opportunity => {
+      const matchesStatus =
+        !filters.statuses.length ||
+        filters.statuses.includes(opportunity.status);
+      const matchesCompany =
+        !filters.company || opportunity.company_name === filters.company;
+      const matchesDate = isWithinDateRange(
+        opportunity.created_on_utc,
+        filters.dateFrom,
+        filters.dateTo
+      );
+      return matchesStatus && matchesCompany && matchesDate;
+    });
+  });
+
+  const filteredApplications = computed(() => {
+    const filters = applicationFilters.value;
+    return applications.value.filter(application => {
+      const matchesStatus =
+        !filters.statuses.length ||
+        filters.statuses.includes(application.status);
+      const matchesDate = isWithinDateRange(
+        application.applied_date,
+        filters.dateFrom,
+        filters.dateTo
+      );
+      return matchesStatus && matchesDate;
+    });
+  });
+
+  const opportunityCompanyOptions = computed(() =>
+    [
+      ...new Set(
+        opportunities.value
+          .map(item => item.company_name)
+          .filter((company): company is string => Boolean(company))
+      )
+    ].sort((a, b) => a.localeCompare(b))
+  );
+
+  function clearOpportunityFilters() {
+    opportunityFilters.value = {
+      statuses: [],
+      company: "",
+      dateFrom: "",
+      dateTo: ""
+    };
+  }
+
+  function clearApplicationFilters() {
+    applicationFilters.value = { statuses: [], dateFrom: "", dateTo: "" };
+  }
+
+  const totalOpportunities = computed(() => filteredOpportunities.value.length);
 
   const activeOpportunities = computed(
     () =>
-      opportunities.value.filter(
+      filteredOpportunities.value.filter(
         o => o.status !== "rejected" && o.status !== "archived"
       ).length
   );
 
-  const totalApplications = computed(() => applications.value.length);
+  const opportunitiesAddedLast30Days = computed(() => {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return filteredOpportunities.value.filter(
+      opportunity => new Date(opportunity.created_on_utc).getTime() >= cutoff
+    ).length;
+  });
+
+  const opportunityApplicationCount = computed(() => {
+    const opportunityIds = new Set(
+      filteredOpportunities.value.map(opportunity => opportunity.id)
+    );
+    return new Set(
+      applications.value
+        .filter(application => opportunityIds.has(application.opportunity_id))
+        .map(application => application.opportunity_id)
+    ).size;
+  });
+
+  const opportunityConversionRate = computed(() =>
+    totalOpportunities.value
+      ? Math.round(
+          (opportunityApplicationCount.value / totalOpportunities.value) * 100
+        )
+      : 0
+  );
+
+  const totalApplications = computed(() => filteredApplications.value.length);
 
   const respondedApplications = computed(
     () =>
-      applications.value.filter(
-        a =>
-          a.status !== "applied" &&
-          a.status !== "withdrawn"
+      filteredApplications.value.filter(
+        a => a.status !== "applied" && a.status !== "withdrawn"
       ).length
   );
 
   const activePipelineCount = computed(
     () =>
-      applications.value.filter(
+      filteredApplications.value.filter(
         a => a.status !== "rejected" && a.status !== "withdrawn"
       ).length
   );
 
   const waitingForResponseCount = computed(
-    () => applications.value.filter(a => a.status === "applied").length
+    () => filteredApplications.value.filter(a => a.status === "applied").length
   );
 
   const interviewStageCount = computed(
     () =>
-      applications.value.filter(
+      filteredApplications.value.filter(
         a =>
           a.status === "interview_scheduled" ||
           a.status === "interview_completed" ||
@@ -146,7 +256,9 @@ export function useDashboard() {
 
   const responseRate = computed(() =>
     totalApplications.value
-      ? Math.round((respondedApplications.value / totalApplications.value) * 100)
+      ? Math.round(
+          (respondedApplications.value / totalApplications.value) * 100
+        )
       : 0
   );
 
@@ -157,7 +269,7 @@ export function useDashboard() {
   );
 
   const offersCount = computed(
-    () => applications.value.filter(a => a.status === "offer").length
+    () => filteredApplications.value.filter(a => a.status === "offer").length
   );
 
   const upcomingInterviewCount = computed(
@@ -186,7 +298,7 @@ export function useDashboard() {
 
   const opportunityByStatus = computed<StatusDatum[]>(() =>
     buildStatusData(
-      opportunities.value,
+      filteredOpportunities.value,
       OPPORTUNITY_STATUS_ORDER,
       OPPORTUNITY_STATUS_LABELS,
       OPPORTUNITY_STATUS_COLORS
@@ -195,7 +307,7 @@ export function useDashboard() {
 
   const applicationByStatus = computed<StatusDatum[]>(() =>
     buildStatusData(
-      applications.value,
+      filteredApplications.value,
       APPLICATION_STATUS_ORDER,
       APPLICATION_STATUS_LABELS,
       APPLICATION_STATUS_COLORS
@@ -206,8 +318,16 @@ export function useDashboard() {
     const total = totalApplications.value;
     const stages = [
       { label: "Applications sent", value: total, color: "#1F6F8B" },
-      { label: "Responses received", value: respondedApplications.value, color: "#2B6CB0" },
-      { label: "Interview stage", value: interviewStageCount.value, color: "#D99A2B" },
+      {
+        label: "Responses received",
+        value: respondedApplications.value,
+        color: "#2B6CB0"
+      },
+      {
+        label: "Interview stage",
+        value: interviewStageCount.value,
+        color: "#D99A2B"
+      },
       { label: "Offers", value: offersCount.value, color: "#2F855A" }
     ];
     return stages.map(stage => ({
@@ -224,7 +344,7 @@ export function useDashboard() {
       start.setDate(start.getDate() - i * 7);
       const end = new Date(start);
       end.setDate(end.getDate() + 7);
-      const value = applications.value.filter(a => {
+      const value = filteredApplications.value.filter(a => {
         if (a.applied_date === null) return false;
         const t = new Date(a.applied_date).getTime();
         return t >= start.getTime() && t < end.getTime();
@@ -241,7 +361,7 @@ export function useDashboard() {
   });
 
   const recentOpportunities = computed(() =>
-    [...opportunities.value]
+    [...filteredOpportunities.value]
       .sort((a, b) => b.created_on_utc.localeCompare(a.created_on_utc))
       .slice(0, 5)
   );
@@ -249,13 +369,17 @@ export function useDashboard() {
   const upcomingInterviews = computed<UpcomingInterviewRow[]>(() => {
     const sorted = [...interviews.value]
       .filter(
-        i => new Date(i.scheduled_at).getTime() >= Date.now() - 24 * 3600 * 1000
+        i =>
+          new Date(i.scheduled_at).getTime() >= Date.now() - 24 * 3600 * 1000 &&
+          filteredApplications.value.some(app => app.id === i.application_id)
       )
       .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at))
       .slice(0, 5);
 
     return sorted.map(i => {
-      const app = applications.value.find(a => a.id === i.application_id);
+      const app = filteredApplications.value.find(
+        a => a.id === i.application_id
+      )!;
       const opp = app
         ? opportunities.value.find(o => o.id === app.opportunity_id)
         : undefined;
@@ -270,7 +394,11 @@ export function useDashboard() {
 
   const pendingFollowUps = computed(() =>
     [...followUps.value]
-      .filter(f => f.status !== "completed")
+      .filter(
+        f =>
+          f.status !== "completed" &&
+          filteredApplications.value.some(app => app.id === f.application_id)
+      )
       .sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at))
       .slice(0, 5)
   );
@@ -280,6 +408,9 @@ export function useDashboard() {
       followUps.value.filter(
         followUp =>
           followUp.status !== "completed" &&
+          filteredApplications.value.some(
+            application => application.id === followUp.application_id
+          ) &&
           new Date(followUp.scheduled_at).getTime() < Date.now()
       ).length
   );
@@ -288,8 +419,16 @@ export function useDashboard() {
     loading,
     error,
     load,
+    opportunityFilters,
+    applicationFilters,
+    opportunityCompanyOptions,
+    clearOpportunityFilters,
+    clearApplicationFilters,
     totalOpportunities,
     activeOpportunities,
+    opportunitiesAddedLast30Days,
+    opportunityApplicationCount,
+    opportunityConversionRate,
     totalApplications,
     respondedApplications,
     activePipelineCount,

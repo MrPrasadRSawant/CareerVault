@@ -3,7 +3,7 @@
     <div class="trend-summary" aria-live="polite">
       <div class="trend-primary-metric">
         <span class="trend-metric-value">{{ totalApplications }}</span>
-        <span class="trend-metric-label">applications</span>
+        <span class="trend-metric-label">{{ metricLabel }}</span>
       </div>
       <div class="trend-secondary-metrics">
         <div class="trend-secondary-metric">
@@ -34,7 +34,7 @@
         role="img"
         :aria-labelledby="`${chartId}-title ${chartId}-description`"
       >
-        <title :id="`${chartId}-title`">Applications per week</title>
+        <title :id="`${chartId}-title`">{{ metricTitle }} per week</title>
         <desc :id="`${chartId}-description`">{{ chartDescription }}</desc>
 
         <defs>
@@ -42,8 +42,20 @@
             <stop offset="0%" stop-color="#1F6F8B" stop-opacity="0.24" />
             <stop offset="100%" stop-color="#1F6F8B" stop-opacity="0.015" />
           </linearGradient>
-          <filter :id="`${chartId}-shadow`" x="-20%" y="-20%" width="140%" height="150%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1F6F8B" flood-opacity="0.2" />
+          <filter
+            :id="`${chartId}-shadow`"
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="150%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="3"
+              stdDeviation="3"
+              flood-color="#1F6F8B"
+              flood-opacity="0.2"
+            />
           </filter>
         </defs>
 
@@ -56,7 +68,12 @@
             :x2="chartWidth - chartPadding.right"
             :y2="tick.y"
           />
-          <text v-for="tick in yTicks" :key="`label-${tick.value}`" x="0" :y="tick.y + 4">
+          <text
+            v-for="tick in yTicks"
+            :key="`label-${tick.value}`"
+            x="0"
+            :y="tick.y + 4"
+          >
             {{ tick.value }}
           </text>
         </g>
@@ -77,12 +94,20 @@
             :x2="activePoint.x"
             :y2="chartHeight - chartPadding.bottom"
           />
-          <circle :cx="activePoint.x" :cy="activePoint.y" r="7" class="trend-point-ring" />
+          <circle
+            :cx="activePoint.x"
+            :cy="activePoint.y"
+            r="7"
+            class="trend-point-ring"
+          />
           <g :transform="`translate(${tooltipX}, ${tooltipY})`">
             <rect width="118" height="48" rx="8" class="trend-tooltip" />
-            <text x="12" y="19" class="trend-tooltip-label">{{ activePoint.label }}</text>
+            <text x="12" y="19" class="trend-tooltip-label">
+              {{ activePoint.label }}
+            </text>
             <text x="12" y="37" class="trend-tooltip-value">
-              {{ activePoint.value }} {{ activePoint.value === 1 ? "application" : "applications" }}
+              {{ activePoint.value }}
+              {{ activePoint.value === 1 ? singularLabel : metricLabel }}
             </text>
           </g>
         </g>
@@ -95,23 +120,28 @@
           r="4"
           class="trend-point"
           tabindex="0"
-          :aria-label="`${point.label}: ${point.value} applications`"
+          :aria-label="`${point.label}: ${point.value} ${metricLabel}`"
           @mouseenter="activeIndex = index"
           @mouseleave="activeIndex = null"
           @focus="activeIndex = index"
           @blur="activeIndex = null"
         >
-          <title>{{ point.label }}: {{ point.value }} applications</title>
+          <title>{{ point.label }}: {{ point.value }} {{ metricLabel }}</title>
         </circle>
       </svg>
 
       <div class="trend-x-axis" aria-hidden="true">
-        <span v-for="point in points" :key="point.label">{{ point.label }}</span>
+        <span v-for="point in points" :key="point.label">{{
+          point.label
+        }}</span>
       </div>
 
-      <div v-if="points.length === 0 || totalApplications === 0" class="trend-empty">
+      <div
+        v-if="points.length === 0 || totalApplications === 0"
+        class="trend-empty"
+      >
         <q-icon name="insights" size="24px" />
-        <span>No applications recorded in this period</span>
+        <span>No {{ metricLabel }} recorded in this period</span>
       </div>
     </div>
   </div>
@@ -123,11 +153,25 @@ import type { WeeklyPoint } from "../composables/useDashboard";
 
 defineOptions({ name: "TrendChart" });
 
-const props = defineProps<{
-  points: WeeklyPoint[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    points: WeeklyPoint[];
+    metricLabel?: string;
+  }>(),
+  { metricLabel: "applications" }
+);
 
 const chartId = useId().replace(/:/g, "");
+const singularLabel = computed(() =>
+  props.metricLabel.endsWith("ies")
+    ? `${props.metricLabel.slice(0, -3)}y`
+    : props.metricLabel.endsWith("s")
+      ? props.metricLabel.slice(0, -1)
+      : props.metricLabel
+);
+const metricTitle = computed(
+  () => props.metricLabel.charAt(0).toUpperCase() + props.metricLabel.slice(1)
+);
 const activeIndex = ref<number | null>(null);
 
 const chartWidth = 640;
@@ -139,22 +183,32 @@ const totalApplications = computed(() =>
 );
 
 const weeklyAverage = computed(() =>
-  props.points.length ? (totalApplications.value / props.points.length).toFixed(1) : "0.0"
+  props.points.length
+    ? (totalApplications.value / props.points.length).toFixed(1)
+    : "0.0"
 );
 
-const peakValue = computed(() => Math.max(0, ...props.points.map(point => point.value)));
+const peakValue = computed(() =>
+  Math.max(0, ...props.points.map(point => point.value))
+);
 
 const recentTotal = computed(() =>
-  props.points.slice(-4).reduce((total, point) => total + Math.max(0, point.value), 0)
+  props.points
+    .slice(-4)
+    .reduce((total, point) => total + Math.max(0, point.value), 0)
 );
 
 const previousTotal = computed(() =>
-  props.points.slice(-8, -4).reduce((total, point) => total + Math.max(0, point.value), 0)
+  props.points
+    .slice(-8, -4)
+    .reduce((total, point) => total + Math.max(0, point.value), 0)
 );
 
 const changePercent = computed(() => {
   if (previousTotal.value === 0) return recentTotal.value > 0 ? 100 : 0;
-  return Math.round(((recentTotal.value - previousTotal.value) / previousTotal.value) * 100);
+  return Math.round(
+    ((recentTotal.value - previousTotal.value) / previousTotal.value) * 100
+  );
 });
 
 const changeLabel = computed(() => {
@@ -164,19 +218,31 @@ const changeLabel = computed(() => {
 });
 
 const changeClass = computed(() =>
-  changePercent.value > 0 ? "trend-change--up" : changePercent.value < 0 ? "trend-change--down" : "trend-change--flat"
+  changePercent.value > 0
+    ? "trend-change--up"
+    : changePercent.value < 0
+      ? "trend-change--down"
+      : "trend-change--flat"
 );
 
 const insightIcon = computed(() =>
-  changePercent.value > 0 ? "trending_up" : changePercent.value < 0 ? "trending_down" : "trending_flat"
+  changePercent.value > 0
+    ? "trending_up"
+    : changePercent.value < 0
+      ? "trending_down"
+      : "trending_flat"
 );
 
 const insight = computed(() => {
-  if (totalApplications.value === 0) return "Start logging applications to see your momentum over time.";
-  if (previousTotal.value === 0 && recentTotal.value > 0) return "Recent activity is newly established; keep tracking to build a reliable trend.";
-  if (changePercent.value > 0) return `Application activity is up ${changePercent.value}% in the most recent four weeks.`;
-  if (changePercent.value < 0) return `Application activity is down ${Math.abs(changePercent.value)}% in the most recent four weeks.`;
-  return "Application activity is stable compared with the previous four weeks.";
+  if (totalApplications.value === 0)
+    return `Start logging ${props.metricLabel} to see your momentum over time.`;
+  if (previousTotal.value === 0 && recentTotal.value > 0)
+    return "Recent activity is newly established; keep tracking to build a reliable trend.";
+  if (changePercent.value > 0)
+    return `${metricTitle.value} activity is up ${changePercent.value}% in the most recent four weeks.`;
+  if (changePercent.value < 0)
+    return `${metricTitle.value} activity is down ${Math.abs(changePercent.value)}% in the most recent four weeks.`;
+  return `${metricTitle.value} activity is stable compared with the previous four weeks.`;
 });
 
 const scaleMax = computed(() => {
@@ -188,7 +254,9 @@ const yTicks = computed(() => {
   const step = scaleMax.value / 4;
   return [0, 1, 2, 3, 4].map(index => ({
     value: Math.round(step * (4 - index)),
-    y: chartPadding.top + index * ((chartHeight - chartPadding.top - chartPadding.bottom) / 4)
+    y:
+      chartPadding.top +
+      index * ((chartHeight - chartPadding.top - chartPadding.bottom) / 4)
   }));
 });
 
@@ -198,10 +266,14 @@ const plottedPoints = computed(() => {
   return props.points.map((point, index) => ({
     ...point,
     value: Math.max(0, point.value),
-    x: props.points.length > 1
-      ? chartPadding.left + (index / (props.points.length - 1)) * innerWidth
-      : chartPadding.left + innerWidth / 2,
-    y: chartPadding.top + innerHeight - (Math.max(0, point.value) / scaleMax.value) * innerHeight
+    x:
+      props.points.length > 1
+        ? chartPadding.left + (index / (props.points.length - 1)) * innerWidth
+        : chartPadding.left + innerWidth / 2,
+    y:
+      chartPadding.top +
+      innerHeight -
+      (Math.max(0, point.value) / scaleMax.value) * innerHeight
   }));
 });
 
@@ -230,20 +302,26 @@ const areaPath = computed(() => {
 });
 
 const activePoint = computed(() =>
-  activeIndex.value === null ? null : plottedPoints.value[activeIndex.value] ?? null
+  activeIndex.value === null
+    ? null
+    : (plottedPoints.value[activeIndex.value] ?? null)
 );
 
 const tooltipX = computed(() => {
   if (!activePoint.value) return 0;
-  return Math.min(chartWidth - chartPadding.right - 118, Math.max(chartPadding.left, activePoint.value.x - 59));
+  return Math.min(
+    chartWidth - chartPadding.right - 118,
+    Math.max(chartPadding.left, activePoint.value.x - 59)
+  );
 });
 
 const tooltipY = computed(() =>
   activePoint.value ? Math.max(chartPadding.top, activePoint.value.y - 62) : 0
 );
 
-const chartDescription = computed(() =>
-  `${totalApplications.value} applications across ${props.points.length} weeks. Peak week: ${peakValue.value}.`
+const chartDescription = computed(
+  () =>
+    `${totalApplications.value} ${props.metricLabel} across ${props.points.length} weeks. Peak week: ${peakValue.value}.`
 );
 </script>
 
