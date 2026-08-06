@@ -14,10 +14,10 @@ FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 
-RUN npm install -g @quasar/cli
+RUN npm install -g @quasar/cli serve
 
 COPY --from=build /app/dist/spa ./dist/spa
 
 EXPOSE 9000
 
-CMD ["quasar", "serve", "./dist/spa", "--port", "9000", "--history"]
+CMD ["serve", "-s", "./dist/spa", "-l", "9000"]

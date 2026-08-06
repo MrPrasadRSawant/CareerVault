@@ -16,7 +16,12 @@ export const resumeApi = {
     return api.post("/resumes", payload).then(r => r.data);
   },
 
-  upload(file: File, name?: string, version?: string): Promise<Resume> {
+  upload(
+    file: File,
+    name?: string,
+    version?: string,
+    uploadedOn?: string
+  ): Promise<Resume> {
     const formData = new FormData();
     formData.append("file", file);
     if (name !== undefined) {
@@ -25,11 +30,16 @@ export const resumeApi = {
     if (version !== undefined) {
       formData.append("version", version);
     }
+    if (uploadedOn !== undefined) {
+      formData.append("uploaded_on", uploadedOn);
+    }
     return api.post("/resumes/upload", formData).then(r => r.data);
   },
 
   download(id: string): Promise<Blob> {
-    return api.get(`/resumes/${id}/download`, { responseType: "blob" }).then(r => r.data);
+    return api
+      .get(`/resumes/${id}/download`, { responseType: "blob" })
+      .then(r => r.data);
   },
 
   update(id: string, payload: ResumeUpdate): Promise<Resume> {

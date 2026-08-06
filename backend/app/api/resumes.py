@@ -1,4 +1,5 @@
 import uuid
+from datetime import date, datetime, time, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
@@ -40,6 +41,7 @@ async def upload_resume(
     file: UploadFile = File(...),
     name: str | None = Form(default=None),
     version: str | None = Form(default=None),
+    uploaded_on: str | None = Form(default=None),
     is_active: bool = Form(default=False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -49,6 +51,12 @@ async def upload_resume(
     if is_active:
         for resume in repo.list_owned(current_user.id):
             repo.update(resume, is_active=False)
+    created_at = None
+    if uploaded_on:
+        try:
+            created_at = datetime.combine(date.fromisoformat(uploaded_on), time.min, tzinfo=timezone.utc)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="uploaded_on must be an ISO date") from exc
     return repo.create(
         user_id=current_user.id,
         name=name or file_name,
@@ -58,6 +66,7 @@ async def upload_resume(
         content_type=file.content_type,
         file_size=file_size,
         is_active=is_active,
+        **({"created_at": created_at} if created_at else {}),
     )
 
 

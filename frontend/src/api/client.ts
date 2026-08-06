@@ -1,7 +1,16 @@
 import axios from "axios";
 
+function defaultApiBaseUrl(): string {
+  if (import.meta.env.DEV) return "/api";
+  if (typeof window !== "undefined") {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return "http://localhost:8000";
+}
+
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL as string | undefined) || "/api"
+  baseURL:
+    (import.meta.env.VITE_API_URL as string | undefined) || defaultApiBaseUrl()
 });
 
 api.interceptors.request.use(config => {
