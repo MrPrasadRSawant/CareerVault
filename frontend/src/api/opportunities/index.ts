@@ -33,5 +33,11 @@ export const opportunityApi = {
 
   remove(id: string): Promise<void> {
     return api.delete(`/opportunities/${id}`);
+  },
+
+  bulkRemove(ids: string[]): Promise<{ deleted_count: number }> {
+    return api
+      .post("/opportunities/bulk-delete", { ids })
+      .then(r => r.data);
   }
 };

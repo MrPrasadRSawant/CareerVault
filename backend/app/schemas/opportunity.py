@@ -35,6 +35,14 @@ class OpportunityUpdate(ORMModel):
     status: OpportunityStatus | None = None
 
 
+class OpportunityBulkDelete(ORMModel):
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=500)
+
+
+class OpportunityBulkDeleteRead(ORMModel):
+    deleted_count: int
+
+
 class OpportunityRead(ORMModel):
     id: uuid.UUID
     title: str

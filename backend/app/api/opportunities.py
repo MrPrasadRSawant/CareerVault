@@ -13,6 +13,8 @@ from app.models.user import User
 from app.repositories.opportunity_repository import OpportunityRepository
 from app.schemas import (
     Message,
+    OpportunityBulkDelete,
+    OpportunityBulkDeleteRead,
     OpportunityCreate,
     OpportunityRead,
     OpportunityUpdate,
@@ -60,6 +62,21 @@ def create_opportunity(
         updated_on_utc=now,
         **payload.model_dump()
     )
+
+
+@router.post("/bulk-delete", response_model=OpportunityBulkDeleteRead)
+def bulk_delete_opportunities(
+    payload: OpportunityBulkDelete,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> OpportunityBulkDeleteRead:
+    deleted_count = OpportunityRepository(db).soft_delete_owned(
+        current_user.id,
+        list(dict.fromkeys(payload.ids)),
+        updated_by=current_user.id,
+        updated_on_utc=datetime.now(timezone.utc),
+    )
+    return OpportunityBulkDeleteRead(deleted_count=deleted_count)
 
 
 @router.get("/{opportunity_id}", response_model=OpportunityRead)

@@ -69,3 +69,46 @@ def test_opportunities_are_user_scoped(client, auth_headers):
         client.get(f"/opportunities/{opportunity_id}", headers=other_headers).status_code
         == 404
     )
+
+
+def test_bulk_delete_opportunities_is_owner_scoped(client, auth_headers):
+    owned_ids = [
+        client.post(
+            "/opportunities",
+            headers=auth_headers,
+            json={"title": title},
+        ).json()["id"]
+        for title in ("First Role", "Second Role")
+    ]
+
+    client.post(
+        "/auth/register",
+        json={
+            "email": "bulk-other@example.com",
+            "full_name": "Bulk Other User",
+            "password": "password123",
+        },
+    )
+    other_login = client.post(
+        "/auth/login",
+        json={"email": "bulk-other@example.com", "password": "password123"},
+    )
+    other_headers = {
+        "Authorization": f"Bearer {other_login.json()['access_token']}"
+    }
+    other_id = client.post(
+        "/opportunities",
+        headers=other_headers,
+        json={"title": "Other User Role"},
+    ).json()["id"]
+
+    deleted = client.post(
+        "/opportunities/bulk-delete",
+        headers=auth_headers,
+        json={"ids": [*owned_ids, other_id, owned_ids[0]]},
+    )
+
+    assert deleted.status_code == 200
+    assert deleted.json() == {"deleted_count": 2}
+    assert client.get("/opportunities", headers=auth_headers).json() == []
+    assert len(client.get("/opportunities", headers=other_headers).json()) == 1

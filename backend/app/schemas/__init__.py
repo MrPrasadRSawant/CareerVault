@@ -13,6 +13,8 @@ from app.schemas.cover_letter import CoverLetterCreate, CoverLetterRead, CoverLe
 from app.schemas.follow_up import FollowUpCreate, FollowUpRead, FollowUpUpdate
 from app.schemas.interview import InterviewCreate, InterviewRead, InterviewUpdate
 from app.schemas.opportunity import (
+    OpportunityBulkDelete,
+    OpportunityBulkDeleteRead,
     OpportunityCreate,
     OpportunityRead,
     OpportunityUpdate,
@@ -44,6 +46,8 @@ __all__ = [
     "InterviewUpdate",
     "LoginRequest",
     "Message",
+    "OpportunityBulkDelete",
+    "OpportunityBulkDeleteRead",
     "OpportunityCreate",
     "OpportunityRead",
     "OpportunityUpdate",
