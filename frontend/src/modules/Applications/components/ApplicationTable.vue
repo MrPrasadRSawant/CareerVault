@@ -13,7 +13,7 @@
               <div class="analysis-grid">
                 <div><span>APPLIED</span><strong>{{ props.row.applied_date || "Not yet" }}</strong></div>
                 <div><span>LOCATION</span><strong>{{ props.row.opportunity?.job_location || "Not specified" }}</strong></div>
-                <div><span>RESUME</span><strong>{{ props.row.resume_id ? "Attached" : "Missing" }}</strong></div>
+                <div><span>RESUME</span><strong>{{ props.row.resume?.name || "Missing" }}</strong></div>
                 <div><span>COVER LETTER</span><strong>{{ props.row.cover_letter_id ? "Attached" : "Missing" }}</strong></div>
               </div>
               <div v-if="props.row.notes" class="analysis-notes">{{ props.row.notes }}</div>
@@ -46,6 +46,15 @@
           </span>
         </q-td>
       </template>
+      <template #body-cell-resume="props">
+        <q-td :props="props">
+          <div v-if="props.row.resume" class="resume-cell">
+            <button class="resume-link ellipsis" type="button" @click="$emit('preview-resume', props.row.resume)"><q-icon name="description" class="q-mr-xs" />{{ props.row.resume.name }}</button>
+            <q-tooltip>Preview attached resume</q-tooltip>
+          </div>
+          <span v-else class="missing-resume">Not attached</span>
+        </q-td>
+      </template>
       <template #body-cell-applied_date="props"><q-td :props="props">{{ props.row.applied_date || "—" }}</q-td></template>
       <template #body-cell-notes="props">
         <q-td :props="props"><span class="ellipsis cell-text">{{ props.row.notes || "—" }}</span><q-tooltip v-if="props.row.notes">{{ props.row.notes }}</q-tooltip></q-td>
@@ -60,6 +69,9 @@
                 <q-item v-if="props.row.opportunity?.post_url" v-close-popup clickable tag="a" :href="props.row.opportunity.post_url" target="_blank"><q-item-section avatar><q-icon name="open_in_new" /></q-item-section><q-item-section>Open job post</q-item-section></q-item>
                 <q-item v-if="props.row.opportunity?.company_url" v-close-popup clickable tag="a" :href="props.row.opportunity.company_url" target="_blank"><q-item-section avatar><q-icon name="language" /></q-item-section><q-item-section>Company website</q-item-section></q-item>
                 <q-item v-if="props.row.opportunity?.company_career_page" v-close-popup clickable tag="a" :href="props.row.opportunity.company_career_page" target="_blank"><q-item-section avatar><q-icon name="work_outline" /></q-item-section><q-item-section>Career page</q-item-section></q-item>
+                <q-separator />
+                <q-item v-if="props.row.resume" v-close-popup clickable @click="$emit('preview-resume', props.row.resume)"><q-item-section avatar><q-icon name="picture_as_pdf" /></q-item-section><q-item-section>Preview attached resume</q-item-section></q-item>
+                <q-item v-close-popup clickable @click="$emit('bind-resume', props.row)"><q-item-section avatar><q-icon name="link" /></q-item-section><q-item-section>{{ props.row.resume ? "Change bound resume" : "Bind resume" }}</q-item-section></q-item>
                 <q-separator />
                 <q-item v-close-popup clickable class="text-negative" @click="$emit('delete', props.row)"><q-item-section avatar><q-icon name="delete" color="negative" /></q-item-section><q-item-section>Delete application</q-item-section></q-item>
               </q-list>
@@ -80,7 +92,7 @@ import { applicationStatusOptions } from "../utils";
 import type { ApplicationRow } from "../types";
 
 defineProps<{ rows: ApplicationRow[]; loading: boolean; saving: boolean }>();
-const emit = defineEmits<{ (event: "view", row: ApplicationRow): void; (event: "delete", row: ApplicationRow): void; (event: "status-change", row: ApplicationRow, status: ApplicationStatus): void }>();
+const emit = defineEmits<{ (event: "view", row: ApplicationRow): void; (event: "delete", row: ApplicationRow): void; (event: "bind-resume", row: ApplicationRow): void; (event: "preview-resume", resume: NonNullable<ApplicationRow["resume"]>): void; (event: "status-change", row: ApplicationRow, status: ApplicationStatus): void }>();
 const statusOptions = applicationStatusOptions;
 const pagination = ref({ page: 1, rowsPerPage: 10 });
 const editingStatusId = ref<string | null>(null);
@@ -88,6 +100,7 @@ const columns: QTableProps["columns"] = [
   { name: "opportunity", label: "Opportunity", align: "left", field: row => row.opportunity?.title ?? "" },
   { name: "company", label: "Company", align: "left", field: row => row.opportunity?.company_name ?? "" },
   { name: "status", label: "Status", align: "left", field: "status" },
+  { name: "resume", label: "Resume", align: "left", field: row => row.resume?.name ?? "" },
   { name: "applied_date", label: "Applied on", align: "left", field: "applied_date" },
   { name: "notes", label: "Notes", align: "left", field: "notes" },
   { name: "actions", label: "", align: "right", field: "id" }
@@ -110,6 +123,10 @@ function onStatusSelected(row: ApplicationRow, status: ApplicationStatus) {
 .status-display { display: inline-flex; align-items: center; min-height: 32px; cursor: pointer; outline: none; }
 .status-display:focus-visible { border-radius: 5px; box-shadow: 0 0 0 2px var(--cv-focus-ring); }
 .status-select { min-width: 170px; }
+.resume-cell { max-width: 190px; }
+.resume-link { display: block; max-width: 190px; overflow: hidden; border: 0; padding: 0; background: transparent; color: var(--cv-primary-dark); font-size: 12px; text-align: left; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.resume-link:hover { text-decoration: underline; }
+.missing-resume { color: var(--cv-muted-light); font-size: 12px; }
 .actions-cell { white-space: nowrap; }
 .analysis-card { width: 320px; padding: 14px; border-radius: 12px; background: var(--cv-surface); color: var(--cv-navy); box-shadow: var(--cv-shadow-tooltip); }
 .analysis-kicker { display: flex; align-items: center; gap: 5px; color: var(--cv-muted-light); font-size: 10px; font-weight: 800; letter-spacing: .06em; }

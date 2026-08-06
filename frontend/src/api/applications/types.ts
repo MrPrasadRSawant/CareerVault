@@ -21,8 +21,8 @@ export interface Application {
 
 export interface ApplicationCreate {
   opportunity_id: string;
-  resume_id?: number | null;
-  cover_letter_id?: number | null;
+  resume_id?: string | null;
+  cover_letter_id?: string | null;
   status?: ApplicationStatus;
   applied_date?: string | null;
   notes?: string | null;

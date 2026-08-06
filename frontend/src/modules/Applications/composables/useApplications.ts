@@ -3,6 +3,8 @@ import { useQuasar } from "quasar";
 import { applicationApi, type Application, type ApplicationStatus } from "@/api/applications";
 import { opportunityApi } from "@/api/opportunities";
 import type { Opportunity } from "@/api/opportunities";
+import { resumeApi } from "@/api/resumes";
+import type { Resume } from "@/api/resumes";
 import { APPLICATION_STATUS_LABELS } from "@/modules/shared/statusColors";
 import { defaultApplicationFilters, tabMatches } from "../utils";
 import type { ApplicationFilters, ApplicationRow, ApplicationTabKey } from "../types";
@@ -11,6 +13,7 @@ export function useApplications() {
   const $q = useQuasar();
   const applications = ref<Application[]>([]);
   const opportunities = ref<Opportunity[]>([]);
+  const resumes = ref<Resume[]>([]);
   const loading = ref(false);
   const saving = ref(false);
   const activeTab = ref<ApplicationTabKey>("all");
@@ -18,7 +21,8 @@ export function useApplications() {
 
   const rows = computed<ApplicationRow[]>(() => applications.value.map(application => ({
     ...application,
-    opportunity: opportunities.value.find(item => item.id === application.opportunity_id) ?? null
+    opportunity: opportunities.value.find(item => item.id === application.opportunity_id) ?? null,
+    resume: resumes.value.find(item => item.id === application.resume_id) ?? null
   })));
 
   const filteredRows = computed(() => rows.value.filter(row => {
@@ -58,9 +62,10 @@ export function useApplications() {
   async function load(): Promise<void> {
     loading.value = true;
     try {
-      const [appList, opportunityList] = await Promise.all([applicationApi.list(), opportunityApi.list()]);
+      const [appList, opportunityList, resumeList] = await Promise.all([applicationApi.list(), opportunityApi.list(), resumeApi.list()]);
       applications.value = appList;
       opportunities.value = opportunityList;
+      resumes.value = resumeList;
     } catch {
       $q.notify({ type: "negative", message: "Could not load applications" });
     } finally {
@@ -108,6 +113,21 @@ export function useApplications() {
     }
   }
 
+  async function bindResume(id: string, resumeId: string | null): Promise<boolean> {
+    saving.value = true;
+    try {
+      const updated = await applicationApi.update(id, { resume_id: resumeId });
+      replaceApplication(updated);
+      $q.notify({ type: "positive", message: resumeId ? "Resume binding updated" : "Resume removed from application" });
+      return true;
+    } catch {
+      $q.notify({ type: "negative", message: "Could not update the application resume" });
+      return false;
+    } finally {
+      saving.value = false;
+    }
+  }
+
   async function deleteApplication(row: ApplicationRow): Promise<void> {
     const confirmed = await new Promise<boolean>(resolve => {
       $q.dialog({ title: "Delete application?", message: `Remove the application for “${row.opportunity?.title ?? "this opportunity"}”?`, cancel: true, persistent: true }).onOk(() => resolve(true)).onCancel(() => resolve(false));
@@ -124,5 +144,5 @@ export function useApplications() {
 
   onMounted(load);
 
-  return { applications, opportunities, rows, filteredRows, tabCounts, filters, activeTab, loading, saving, load, clearFilters, updateStatus, createApplication, deleteApplication };
+  return { applications, opportunities, resumes, rows, filteredRows, tabCounts, filters, activeTab, loading, saving, load, clearFilters, updateStatus, createApplication, bindResume, deleteApplication };
 }

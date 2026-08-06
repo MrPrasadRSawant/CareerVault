@@ -16,13 +16,20 @@ export const resumeApi = {
     return api.post("/resumes", payload).then(r => r.data);
   },
 
-  upload(file: File, name?: string): Promise<Resume> {
+  upload(file: File, name?: string, version?: string): Promise<Resume> {
     const formData = new FormData();
     formData.append("file", file);
     if (name !== undefined) {
       formData.append("name", name);
     }
+    if (version !== undefined) {
+      formData.append("version", version);
+    }
     return api.post("/resumes/upload", formData).then(r => r.data);
+  },
+
+  download(id: string): Promise<Blob> {
+    return api.get(`/resumes/${id}/download`, { responseType: "blob" }).then(r => r.data);
   },
 
   update(id: string, payload: ResumeUpdate): Promise<Resume> {

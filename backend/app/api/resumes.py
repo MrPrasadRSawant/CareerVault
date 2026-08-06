@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -80,7 +80,12 @@ def download_resume(
     path = Path(resume.file_path)
     if not path.is_file():
         raise FileNotFoundError(resume.file_path)
-    return FileResponse(path, filename=resume.file_name, media_type="application/octet-stream")
+    return FileResponse(
+        path,
+        filename=resume.file_name,
+        media_type=resume.content_type or "application/octet-stream",
+        content_disposition_type="inline",
+    )
 
 
 @router.patch("/{resume_id}", response_model=ResumeRead)
@@ -108,6 +113,11 @@ def delete_resume(
 ) -> Message:
     repo = ResumeRepository(db)
     resume = repo.get_owned(current_user.id, resume_id)
+    if resume.applications:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Resume is attached to an application and cannot be deleted",
+        )
     Path(resume.file_path).unlink(missing_ok=True)
     repo.delete(resume)
     return Message(detail="Resume deleted")

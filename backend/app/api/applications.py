@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.repositories.application_repository import ApplicationRepository
 from app.repositories.opportunity_repository import OpportunityRepository
+from app.repositories.resume_repository import ResumeRepository
 from app.repositories.status_history_repository import ApplicationStatusHistoryRepository
 from app.schemas import (
     ApplicationCreate,
@@ -42,6 +43,8 @@ def create_application(
 ):
     repo = ApplicationRepository(db)
     OpportunityRepository(db).get_owned(current_user.id, payload.opportunity_id)
+    if payload.resume_id is not None:
+        ResumeRepository(db).get_owned(current_user.id, payload.resume_id)
     values = payload.model_dump()
     values["applied_date"] = values.get("applied_date") or datetime.now(timezone.utc).date()
     return repo.create(user_id=current_user.id, **values)
@@ -65,6 +68,8 @@ def update_application(
 ):
     repo = ApplicationRepository(db)
     application = repo.get_owned(current_user.id, application_id)
+    if payload.resume_id is not None:
+        ResumeRepository(db).get_owned(current_user.id, payload.resume_id)
     return repo.update(application, **payload.model_dump(exclude_unset=True))
 
 
