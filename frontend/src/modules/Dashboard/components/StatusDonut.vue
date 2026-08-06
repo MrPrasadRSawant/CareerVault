@@ -42,13 +42,36 @@
       </svg>
     </div>
 
-    <div v-if="total > 0" class="donut-legend">
-      <div v-for="(item, i) in data" :key="i" class="legend-row">
-        <span class="legend-dot" :style="{ background: item.color }"></span>
-        <span class="legend-label">{{ item.label }}</span>
-        <span class="legend-value">{{ item.value }}</span>
-        <span class="legend-percent">{{ item.percent }}%</span>
-      </div>
+    <div v-if="total > 0" class="summary-table-wrap">
+      <table class="summary-table">
+        <caption class="sr-only">Opportunity counts grouped by status</caption>
+        <thead>
+          <tr>
+            <th scope="col">Status</th>
+            <th scope="col" class="numeric-column">Count</th>
+            <th scope="col" class="numeric-column">Share</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in legendItems" :key="item.label">
+            <td>
+              <span class="status-name">
+                <span class="legend-dot" :style="{ background: item.color }"></span>
+                {{ item.label }}
+              </span>
+            </td>
+            <td class="summary-value numeric-column">{{ item.value }}</td>
+            <td class="summary-percent numeric-column">{{ item.percent }}%</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total</th>
+            <td class="summary-value numeric-column">{{ total }}</td>
+            <td class="summary-percent numeric-column">100%</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
     <div v-else class="donut-empty">No data yet</div>
   </div>
@@ -67,6 +90,8 @@ const props = defineProps<{
 
 const chartId = useId().replace(/:/g, "");
 
+const legendItems = computed(() => props.data.filter(item => item.value > 0));
+
 const segments = computed(() => {
   let cumulative = 0;
   return props.data
@@ -82,10 +107,11 @@ const segments = computed(() => {
 
 <style lang="scss" scoped>
 .donut-wrap {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(160px, 210px) minmax(0, 1fr);
   align-items: center;
-  gap: 18px;
+  gap: 28px;
+  min-height: 210px;
 }
 
 .donut-chart {
@@ -117,19 +143,57 @@ const segments = computed(() => {
   letter-spacing: 0.8px;
 }
 
-.donut-legend {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 18px;
+.summary-table-wrap {
   width: 100%;
+  overflow-x: auto;
 }
 
-.legend-row {
-  display: flex;
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #475569;
+  font-size: 13px;
+}
+
+.summary-table caption.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #edf2f5;
+  text-align: left;
+}
+
+.summary-table thead th {
+  color: #829ab1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.summary-table tfoot th,
+.summary-table tfoot td {
+  border-bottom: 0;
+  color: #102a43;
+  font-weight: 700;
+}
+
+.status-name {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  min-width: 0;
+  font-weight: 500;
 }
 
 .legend-dot {
@@ -138,27 +202,38 @@ const segments = computed(() => {
   border-radius: 3px;
 }
 
-.legend-label {
-  color: #475569;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.legend-value {
+.summary-value {
   font-weight: 700;
   color: #023047;
 }
 
-.legend-percent {
+.summary-percent {
   color: #94a3b8;
-  min-width: 34px;
+}
+
+.summary-table .numeric-column {
+  width: 82px;
   text-align: right;
 }
 
 .donut-empty {
+  grid-column: 1 / -1;
   font-size: 13px;
   color: #94a3b8;
   padding: 20px 0;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .donut-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .summary-table th,
+  .summary-table td {
+    padding: 8px;
+  }
 }
 </style>

@@ -93,6 +93,27 @@
       </div>
 
       <div class="row q-col-gutter-md q-mt-md">
+        <div class="col-12">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Opportunities by status</div>
+                <div class="panel-subtitle">
+                  {{ totalOpportunities }}
+                  {{ totalOpportunities === 1 ? "opportunity" : "opportunities" }}
+                  across your pipeline
+                </div>
+              </div>
+              <router-link class="panel-link" :to="{ name: 'opportunities' }">
+                View all
+              </router-link>
+            </div>
+            <StatusDonut :data="opportunityByStatus" :total="totalOpportunities" />
+          </div>
+        </div>
+      </div>
+
+      <div class="row q-col-gutter-md q-mt-md">
         <div class="col-12 col-md-7">
           <div class="panel-card">
             <div class="panel-header">
@@ -172,6 +193,7 @@ import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useDashboard } from "./composables/useDashboard";
 import StatCard from "./components/StatCard.vue";
+import StatusDonut from "./components/StatusDonut.vue";
 import StatusBars from "./components/StatusBars.vue";
 import ApplicationFunnel from "./components/ApplicationFunnel.vue";
 import TrendChart from "./components/TrendChart.vue";
@@ -185,6 +207,7 @@ const {
   loading,
   error,
   load,
+  totalOpportunities,
   totalApplications,
   offersCount,
   respondedApplications,
@@ -193,6 +216,7 @@ const {
   interviewStageCount,
   responseRate,
   interviewConversionRate,
+  opportunityByStatus,
   applicationByStatus,
   applicationFunnel,
   applicationsPerWeek,
