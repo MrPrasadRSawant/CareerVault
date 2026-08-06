@@ -7,9 +7,28 @@
   --cv-amber: #d99a2b;
   --cv-orange: #b7791f;
   --cv-page: #f5f8fa;
+  --cv-surface: #ffffff;
+  --cv-surface-soft: #f7fafc;
   --cv-border: #dce6eb;
+  --cv-border-light: #edf2f5;
   --cv-text: #243b53;
   --cv-muted: #627d98;
+  --cv-muted-light: #829ab1;
+  --cv-text-strong: #334e68;
+  --cv-primary-dark: #126e91;
+  --cv-primary-soft: #e7f3f8;
+  --cv-empty-soft: #f0f3f5;
+  --cv-white: #ffffff;
+  --cv-focus-ring: rgba(18, 110, 145, 0.25);
+  --cv-shadow-card: 0 4px 18px rgba(16, 42, 67, 0.08);
+  --cv-shadow-tooltip: 0 18px 40px rgba(16, 42, 67, 0.28), 0 5px 14px rgba(16, 42, 67, 0.18);
+  --cv-status-draft: #94a3b8;
+  --cv-status-applied-soft: #8ecae6;
+  --cv-status-applied: #219ebc;
+  --cv-status-interview: #ffb703;
+  --cv-status-interview-complete: #fb8500;
+  --cv-status-offer: #2a9d8f;
+  --cv-status-closed: #64748b;
 }
 
 html {

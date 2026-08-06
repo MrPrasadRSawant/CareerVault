@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: "applications",
         name: "applications",
-        component: () => import("@/pages/ApplicationsPage.vue")
+        component: () => import("@/modules/Applications/ApplicationsPage.vue")
       },
       {
         path: "cover-letters",

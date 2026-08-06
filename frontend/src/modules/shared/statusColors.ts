@@ -34,19 +34,19 @@ export const OPPORTUNITY_STATUS_LABELS: Record<OpportunityStatus, string> = {
 };
 
 export const OPPORTUNITY_STATUS_COLORS: Record<OpportunityStatus, string> = {
-  draft: "#94A3B8",
-  saved: "#8ECAE6",
-  applied: "#219EBC",
-  interviewing: "#FFB703",
-  offered: "#2A9D8F",
-  follow_up: "#D99A2B",
-  interview_scheduled: "#FFB703",
-  interview_completed: "#FB8500",
-  offer: "#2A9D8F",
-  rejected: "#FB8500",
-  not_replied: "#64748B",
-  on_hold: "#64748B",
-  archived: "#64748B"
+  draft: "var(--cv-status-draft)",
+  saved: "var(--cv-status-applied-soft)",
+  applied: "var(--cv-status-applied)",
+  interviewing: "var(--cv-status-interview)",
+  offered: "var(--cv-status-offer)",
+  follow_up: "var(--cv-amber)",
+  interview_scheduled: "var(--cv-status-interview)",
+  interview_completed: "var(--cv-status-interview-complete)",
+  offer: "var(--cv-status-offer)",
+  rejected: "var(--cv-status-interview-complete)",
+  not_replied: "var(--cv-status-closed)",
+  on_hold: "var(--cv-status-closed)",
+  archived: "var(--cv-status-closed)"
 };
 
 export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
@@ -70,11 +70,11 @@ export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
 };
 
 export const APPLICATION_STATUS_COLORS: Record<ApplicationStatus, string> = {
-  applied: "#8ECAE6",
-  screening: "#219EBC",
-  interview_scheduled: "#FFB703",
-  interview_completed: "#FB8500",
-  offer: "#2A9D8F",
-  rejected: "#FB8500",
-  withdrawn: "#64748B"
+  applied: "var(--cv-status-applied-soft)",
+  screening: "var(--cv-status-applied)",
+  interview_scheduled: "var(--cv-status-interview)",
+  interview_completed: "var(--cv-status-interview-complete)",
+  offer: "var(--cv-status-offer)",
+  rejected: "var(--cv-status-interview-complete)",
+  withdrawn: "var(--cv-status-closed)"
 };
