@@ -11,7 +11,9 @@ export type OpportunityStatus =
   | "rejected"
   | "not_replied"
   | "on_hold"
-  | "archived";
+  | "archived"
+  | "not_satisfying_expectations"
+  ;
 
 export interface Opportunity {
   id: string;

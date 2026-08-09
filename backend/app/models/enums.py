@@ -16,6 +16,7 @@ class OpportunityStatus(str, enum.Enum):
     NOT_REPLIED = "not_replied"
     ON_HOLD = "on_hold"
     ARCHIVED = "archived"
+    NOT_SATISFYING_EXPECTATIONS = "not_satisfying_expectations"
 
 
 class ApplicationStatus(str, enum.Enum):

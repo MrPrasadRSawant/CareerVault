@@ -363,6 +363,20 @@ The included `nginx.conf` and `careervault.service` are configured for
 `/var/www/CareerVault/Dev`. The Nginx configuration expects a Let's Encrypt
 certificate at `/etc/letsencrypt/live/careervault.prasadsawant.com/`.
 
+### One-command deployment
+
+On the server, run the deployment script from the repository root:
+
+```bash
+cd /var/www/CareerVault/Dev
+sudo bash deploy.sh
+```
+
+It fast-forwards `main`, updates Python dependencies, runs Alembic migrations,
+builds the frontend, installs the included systemd and Nginx configuration,
+validates Nginx, restarts the API, and checks the local health endpoint. The
+backend virtual environment and `backend/.env` must already exist.
+
 Production frontend builds use `frontend/.env.production`, which sets:
 
 ```env
