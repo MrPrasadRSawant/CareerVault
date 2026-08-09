@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "CareerVault"
     APP_ENV: str = "development"
+    ENABLE_API_DOCS: bool = True
     SECRET_KEY: str = "replace-with-a-secure-random-secret-key"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     ALGORITHM: str = "HS256"

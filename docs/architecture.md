@@ -106,9 +106,9 @@ frontend/
 ### How the frontend talks to the backend
 
 1. Axios is configured in `src/boot/axios.ts`.
-2. Its `baseURL` defaults to `/api` and it injects the stored JWT on every
+2. Its `baseURL` defaults to `/api/v1` and it injects the stored JWT on every
    request.
-3. In development, `quasar.config.ts` proxies `/api` to
+3. In development, `quasar.config.ts` proxies `/api` (including `/api/v1`) to
    `http://localhost:8000` (no CORS involved). To point at another backend,
    set `API_PROXY_TARGET` or `VITE_API_URL`.
 4. On a 401 response the interceptor clears the token and redirects to
