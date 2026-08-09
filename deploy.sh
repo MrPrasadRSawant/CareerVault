@@ -43,8 +43,7 @@ echo "==> Applying database migrations"
 echo "==> Building frontend"
 (
   cd "$FRONTEND_DIR"
-  npm ci
-  npm run build
+  npx quasar build
 )
 
 echo "==> Installing service and Nginx configuration"
