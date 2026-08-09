@@ -5,10 +5,16 @@ from fastapi.responses import JSONResponse
 from app.api.router import api_router
 from app.core.config import settings
 
+API_V1_PREFIX = "/api/v1"
+
+
 app = FastAPI(
     title=settings.APP_NAME,
     description="Job opportunity and application management platform",
     version="0.1.0",
+    docs_url=f"{API_V1_PREFIX}/docs" if settings.ENABLE_API_DOCS else None,
+    redoc_url=f"{API_V1_PREFIX}/redoc" if settings.ENABLE_API_DOCS else None,
+    openapi_url=f"{API_V1_PREFIX}/openapi.json" if settings.ENABLE_API_DOCS else None,
 )
 
 app.add_middleware(
@@ -22,7 +28,7 @@ app.add_middleware(
 app.include_router(api_router)
 
 
-@app.get("/ai/openapi.json", include_in_schema=False)
+@app.get(f"{API_V1_PREFIX}/ai/openapi.json", include_in_schema=False)
 def ai_openapi_schema(request: Request) -> JSONResponse:
     """Return the isolated OpenAPI contract intended for Custom GPT Actions."""
     full_schema = app.openapi()
@@ -37,7 +43,7 @@ def ai_openapi_schema(request: Request) -> JSONResponse:
         "paths": {
             path: definition
             for path, definition in full_schema.get("paths", {}).items()
-            if path.startswith("/ai/") and path != "/ai/openapi.json"
+            if path.startswith(f"{API_V1_PREFIX}/ai/") and path != f"{API_V1_PREFIX}/ai/openapi.json"
         },
         "components": {
             "schemas": full_schema.get("components", {}).get("schemas", {}),
@@ -53,6 +59,6 @@ def ai_openapi_schema(request: Request) -> JSONResponse:
     return JSONResponse(ai_schema)
 
 
-@app.get("/health", tags=["health"])
+@app.get(f"{API_V1_PREFIX}/health", tags=["health"])
 def health() -> dict:
     return {"status": "ok", "app": settings.APP_NAME, "env": settings.APP_ENV}

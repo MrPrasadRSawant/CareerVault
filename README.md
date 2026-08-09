@@ -270,13 +270,13 @@ uvicorn app.main:app --reload
 The API will be available at:
 
 ```text
-http://localhost:8000
+http://localhost:8000/api/v1
 ```
 
 API documentation:
 
 ```text
-http://localhost:8000/docs
+http://localhost:8000/api/v1/docs
 ```
 
 ### Frontend Setup
@@ -295,8 +295,8 @@ http://localhost:9000
 
 ## Environment Variables
 
-Environment variables are loaded from `backend/.env`. Copy the example file
-and adjust the values:
+Backend environment variables are loaded from `backend/.env`. Copy the example
+file and adjust the values:
 
 ```bash
 cp backend/.env.example backend/.env
@@ -309,6 +309,7 @@ for real use.
 ```env
 APP_NAME=CareerVault
 APP_ENV=development
+ENABLE_API_DOCS=true
 SECRET_KEY=replace-with-a-secure-secret-key
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 
@@ -319,6 +320,17 @@ FRONTEND_URL=http://localhost:9000
 
 For quick local development without PostgreSQL, use `DATABASE_URL=sqlite:///./careervault.db`.
 
+The frontend API URL is configured in `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:8000/api/v1
+```
+
+Set this to the full backend API URL used by the frontend, for example
+`http://localhost:8000/api/v1`. `ENABLE_API_DOCS=true` keeps Swagger, ReDoc,
+and the OpenAPI schema available in both development and production. Set it to
+`false` only when documentation must be disabled.
+
 ## Docker
 
 A `docker-compose.yml` starts PostgreSQL, the backend, and the frontend:
@@ -327,13 +339,26 @@ A `docker-compose.yml` starts PostgreSQL, the backend, and the frontend:
 docker compose up --build
 ```
 
+## Server deployment
+
+The included `nginx.conf` and `careervault.service` are configured for
+`https://careervault.prasadsawant.com` with the project in
+`/var/www/CareerVault/Dev`. The Nginx configuration expects a Let's Encrypt
+certificate at `/etc/letsencrypt/live/careervault.prasadsawant.com/`.
+
+Production frontend builds use `frontend/.env.production`, which sets:
+
+```env
+VITE_API_URL=https://careervault.prasadsawant.com/api/v1
+```
+
 ## API Documentation
 
 FastAPI automatically provides interactive API documentation.
 
-* Swagger UI: `/docs`
-* ReDoc: `/redoc`
-* OpenAPI Schema: `/openapi.json`
+* Swagger UI: `/api/v1/docs`
+* ReDoc: `/api/v1/redoc`
+* OpenAPI Schema: `/api/v1/openapi.json`
 
 ## Security Considerations
 

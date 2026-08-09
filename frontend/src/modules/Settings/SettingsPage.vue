@@ -89,12 +89,13 @@ const configuredBackendUrl = (import.meta.env.VITE_BACKEND_URL as string | undef
   || (import.meta.env.VITE_API_URL as string | undefined);
 const backendOrigin = computed(() => {
   const value = configuredBackendUrl?.replace(/\/$/, "");
-  return value && /^https?:\/\//.test(value) ? value.replace(/\/api$/, "") : "http://localhost:8000";
+  if (value && /^https?:\/\//.test(value)) return value.replace(/\/api\/v1$/, "");
+  return typeof window !== "undefined" ? window.location.origin : "http://localhost:8000";
 });
 const apiBaseUrl = computed(() => backendOrigin.value);
-const openApiUrl = computed(() => `${backendOrigin.value}/ai/openapi.json`);
+const openApiUrl = computed(() => `${backendOrigin.value}/api/v1/ai/openapi.json`);
 const authExample = `X-CareerVault-Key: cvai_your_key_here`;
-const openApiExample = `GET /api/ai/opportunities?query=python&status=draft\nPOST /api/ai/opportunities\nPOST /api/ai/opportunities/bulk\nPATCH /api/ai/opportunities/{id}  (draft only)\nDELETE /api/ai/opportunities/{id}  (draft only)`;
+const openApiExample = `GET /api/v1/ai/opportunities?query=python&status=draft\nPOST /api/v1/ai/opportunities\nPOST /api/v1/ai/opportunities/bulk\nPATCH /api/v1/ai/opportunities/{id}  (draft only)\nDELETE /api/v1/ai/opportunities/{id}  (draft only)`;
 
 function required(value: string) { return value.trim().length > 0 || "A name is required"; }
 function formatDate(value: string) { return new Date(value).toLocaleDateString(); }
