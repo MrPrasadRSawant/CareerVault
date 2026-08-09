@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     DATABASE_URL: str = "sqlite:///./careervault.db"
+    # These limits apply to each application worker when PostgreSQL is used.
+    DATABASE_POOL_SIZE: int = 5
+    DATABASE_MAX_OVERFLOW: int = 10
+    DATABASE_POOL_TIMEOUT_SECONDS: int = 30
+    DATABASE_POOL_RECYCLE_SECONDS: int = 1800
 
     UPLOAD_DIR: str = "uploads"
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024

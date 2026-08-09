@@ -57,6 +57,8 @@ Key settings:
 | `SECRET_KEY`              | insecure default (replace it!)   | JWT signing key                |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60`                          | JWT lifetime                   |
 | `UPLOAD_DIR`              | `uploads`                        | Where resume files are stored  |
+| `DATABASE_POOL_SIZE`       | `5`                              | Persistent PostgreSQL connections per worker |
+| `DATABASE_MAX_OVERFLOW`    | `10`                             | Additional temporary PostgreSQL connections per worker |
 | `FRONTEND_URL`            | `http://localhost:9000`          | CORS allowed origin            |
 
 ### Authentication

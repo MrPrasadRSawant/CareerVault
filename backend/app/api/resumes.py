@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime, time, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.repositories.resume_repository import ResumeRepository
 from app.schemas import Message, ResumeCreate, ResumeRead, ResumeUpdate
-from app.services.upload_service import save_upload
+from app.services.upload_service import delete_upload, save_upload
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 
@@ -47,7 +47,7 @@ async def upload_resume(
     current_user: User = Depends(get_current_user),
 ):
     repo = ResumeRepository(db)
-    file_name, file_path, file_size = save_upload(file, current_user.id)
+    file_name, file_path, file_size = await save_upload(file, current_user.id)
     if is_active:
         for resume in repo.list_owned(current_user.id):
             repo.update(resume, is_active=False)
@@ -117,6 +117,7 @@ def update_resume(
 @router.delete("/{resume_id}", response_model=Message)
 def delete_resume(
     resume_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Message:
@@ -127,6 +128,6 @@ def delete_resume(
             status_code=status.HTTP_409_CONFLICT,
             detail="Resume is attached to an application and cannot be deleted",
         )
-    Path(resume.file_path).unlink(missing_ok=True)
+    background_tasks.add_task(delete_upload, resume.file_path)
     repo.delete(resume)
     return Message(detail="Resume deleted")

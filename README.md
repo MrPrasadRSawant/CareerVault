@@ -314,6 +314,10 @@ SECRET_KEY=replace-with-a-secure-secret-key
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 
 DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/careervault
+DATABASE_POOL_SIZE=5
+DATABASE_MAX_OVERFLOW=10
+DATABASE_POOL_TIMEOUT_SECONDS=30
+DATABASE_POOL_RECYCLE_SECONDS=1800
 
 FRONTEND_URL=http://localhost:9000
 ```
@@ -323,11 +327,11 @@ For quick local development without PostgreSQL, use `DATABASE_URL=sqlite:///./ca
 The frontend API URL is configured in `frontend/.env`:
 
 ```env
-VITE_API_URL=http://localhost:8000/api/v1
+VITE_API_URL=http://localhost:8004/api/v1
 ```
 
 Set this to the full backend API URL used by the frontend, for example
-`http://localhost:8000/api/v1`. `ENABLE_API_DOCS=true` keeps Swagger, ReDoc,
+`http://localhost:8004/api/v1`. `ENABLE_API_DOCS=true` keeps Swagger, ReDoc,
 and the OpenAPI schema available in both development and production. Set it to
 `false` only when documentation must be disabled.
 
@@ -338,6 +342,19 @@ A `docker-compose.yml` starts PostgreSQL, the backend, and the frontend:
 ```bash
 docker compose up --build
 ```
+
+## Concurrent requests and background work
+
+The API uses PostgreSQL connection pooling and runs two Uvicorn workers by
+default in Docker and the supplied systemd service. Tune `WEB_CONCURRENCY` to
+the available CPU and database connection budget. Each worker uses up to
+`DATABASE_POOL_SIZE + DATABASE_MAX_OVERFLOW` connections.
+
+Routes that perform ordinary database CRUD remain synchronous and FastAPI runs
+them in its worker thread pool, so they can serve concurrent users. Upload
+writes are moved off the ASGI event loop. For small, non-critical follow-up
+work, use FastAPI `BackgroundTasks`; jobs that must survive a restart should
+be moved to a durable queue when one is introduced.
 
 ## Server deployment
 

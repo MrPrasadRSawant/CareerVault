@@ -7,8 +7,9 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/CareerVault/Dev/backend
+Environment=WEB_CONCURRENCY=2
 EnvironmentFile=/var/www/CareerVault/Dev/backend/.env
-ExecStart=/var/www/CareerVault/Dev/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+ExecStart=/var/www/CareerVault/Dev/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8004 --workers ${WEB_CONCURRENCY}
 Restart=always
 RestartSec=5
 
