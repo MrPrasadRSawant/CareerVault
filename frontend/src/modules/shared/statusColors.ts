@@ -49,7 +49,7 @@ export const OPPORTUNITY_STATUS_COLORS: Record<OpportunityStatus, string> = {
   not_replied: "var(--cv-status-closed)",
   on_hold: "var(--cv-status-closed)",
   archived: "var(--cv-status-closed)",
-  not_satisfying_expectations: "var(--cv-status-closed)"
+  not_satisfying_expectations: "var(--cv-status-warning)"
 };
 
 export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
