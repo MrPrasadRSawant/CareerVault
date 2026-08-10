@@ -19,9 +19,13 @@
             filled
             label="Opportunity *"
             :options="opportunityOptions"
+            :disable="lockOpportunity"
+            use-input
+            input-debounce="0"
             emit-value
             map-options
             :rules="[value => !!value || 'Choose an opportunity']"
+            @filter="filterOpportunities"
           />
           <q-select
             v-model="form.status"
@@ -68,19 +72,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import type { ApplicationStatus } from "@/api/applications";
 import type { Opportunity } from "@/api/opportunities";
 import type { Resume } from "@/api/resumes";
 import { applicationStatusOptions } from "../utils";
 import ProfessionalDateField from "@/components/ProfessionalDateField.vue";
 
-const props = defineProps<{
-  modelValue: boolean;
-  opportunities: Opportunity[];
-  resumes: Resume[];
-  saving: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean;
+    opportunities: Opportunity[];
+    resumes: Resume[];
+    saving: boolean;
+    initialOpportunityId?: string | null;
+    lockOpportunity?: boolean;
+  }>(),
+  {
+    initialOpportunityId: null,
+    lockOpportunity: false
+  }
+);
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
   (
@@ -95,12 +107,19 @@ const emit = defineEmits<{
   ): void;
 }>();
 const statusOptions = applicationStatusOptions;
-const opportunityOptions = computed(() =>
-  props.opportunities.map(opportunity => ({
+const selectableOpportunityOptions = computed(() =>
+  props.opportunities
+    .filter(
+      opportunity =>
+        opportunity.status === "applied" ||
+        (props.lockOpportunity && opportunity.id === props.initialOpportunityId)
+    )
+    .map(opportunity => ({
     label: `${opportunity.title}${opportunity.company_name ? ` · ${opportunity.company_name}` : ""}`,
     value: opportunity.id
-  }))
+    }))
 );
+const opportunityOptions = ref(selectableOpportunityOptions.value);
 const resumeOptions = computed(() =>
   props.resumes.map(resume => ({
     label: `${resume.name} (${resume.version || "untitled version"})`,
@@ -123,16 +142,35 @@ const form = reactive<{
 watch(
   () => props.modelValue,
   open => {
-    if (open)
+    if (open) {
+      opportunityOptions.value = selectableOpportunityOptions.value;
       Object.assign(form, {
-        opportunity_id: null,
+        opportunity_id: props.initialOpportunityId,
         resume_id: null,
         status: "applied",
         applied_date: new Date().toISOString().slice(0, 10),
         notes: ""
       });
+    }
   }
 );
+watch(selectableOpportunityOptions, options => {
+  opportunityOptions.value = options;
+});
+
+function filterOpportunities(
+  value: string,
+  update: (callback: () => void) => void
+) {
+  update(() => {
+    const search = value.trim().toLowerCase();
+    opportunityOptions.value = search
+      ? selectableOpportunityOptions.value.filter(option =>
+          option.label.toLowerCase().includes(search)
+        )
+      : selectableOpportunityOptions.value;
+  });
+}
 function submit() {
   if (!form.opportunity_id) return;
   emit("save", {

@@ -84,6 +84,7 @@
             <q-menu anchor="bottom right" self="top right">
               <q-list dense style="min-width: 190px">
                 <q-item clickable v-close-popup @click="viewRow(props.row)"><q-item-section avatar><q-icon name="visibility" /></q-item-section><q-item-section>View details</q-item-section></q-item>
+                <q-item clickable v-close-popup @click="convertRow(props.row)"><q-item-section avatar><q-icon name="assignment_turned_in" /></q-item-section><q-item-section>Convert to application</q-item-section></q-item>
                 <q-item v-if="props.row.post_url" clickable v-close-popup tag="a" :href="props.row.post_url" target="_blank" rel="noopener noreferrer"><q-item-section avatar><q-icon name="open_in_new" /></q-item-section><q-item-section>Open job post</q-item-section></q-item>
                 <q-item v-if="props.row.company_career_page" clickable v-close-popup tag="a" :href="props.row.company_career_page" target="_blank" rel="noopener noreferrer"><q-item-section avatar><q-icon name="business" /></q-item-section><q-item-section>Company career page</q-item-section></q-item>
                 <q-item v-if="props.row.company_url" clickable v-close-popup tag="a" :href="props.row.company_url" target="_blank" rel="noopener noreferrer"><q-item-section avatar><q-icon name="language" /></q-item-section><q-item-section>Company website</q-item-section></q-item>
@@ -124,6 +125,7 @@ const emit = defineEmits<{
   (event: "update:selectedRows", value: Opportunity[]): void;
   (event: "view", opportunity: Opportunity): void;
   (event: "edit", opportunity: Opportunity): void;
+  (event: "convert", opportunity: Opportunity): void;
   (event: "delete", opportunity: Opportunity): void;
   (event: "status-change", opportunity: Opportunity, status: OpportunityStatus): void;
 }>();
@@ -158,6 +160,7 @@ function viewRow(opportunity: Opportunity) {
   else emit("view", opportunity);
 }
 function editRow(opportunity: Opportunity) { emit("edit", opportunity); }
+function convertRow(opportunity: Opportunity) { emit("convert", opportunity); }
 function deleteRow(opportunity: Opportunity) { emit("delete", opportunity); }
 function onStatusSelected(opportunity: Opportunity, status: OpportunityStatus) {
   editingStatusId.value = null;

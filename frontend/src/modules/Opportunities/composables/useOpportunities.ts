@@ -1,11 +1,15 @@
 import { computed, ref } from "vue";
 import { useQuasar } from "quasar";
+import { applicationApi } from "@/api/applications";
+import type { ApplicationCreate } from "@/api/applications";
 import { opportunityApi } from "@/api/opportunities";
 import type {
   Opportunity,
   OpportunityCreate,
   OpportunityStatus
 } from "@/api/opportunities";
+import { resumeApi } from "@/api/resumes";
+import type { Resume } from "@/api/resumes";
 import {
   csvEscape,
   createDefaultFilters,
@@ -22,8 +26,10 @@ import type {
 export function useOpportunities() {
   const $q = useQuasar();
   const opportunities = ref<Opportunity[]>([]);
+  const resumes = ref<Resume[]>([]);
   const loading = ref(false);
   const saving = ref(false);
+  const savingApplication = ref(false);
   const importing = ref(false);
   const filters = ref<OpportunityFilters>(createDefaultFilters());
   const selectedRows = ref<Opportunity[]>([]);
@@ -32,7 +38,10 @@ export function useOpportunities() {
   const formDialog = ref(false);
   const viewDialog = ref(false);
   const exportDialog = ref(false);
+  const applicationDialog = ref(false);
+  const convertingOpportunity = ref<Opportunity | null>(null);
   const updatingStatusIds = ref<string[]>([]);
+  let resumesLoaded = false;
 
   const filteredOpportunities = computed(() => {
     const current = filters.value;
@@ -106,6 +115,35 @@ export function useOpportunities() {
   function openView(opportunity: Opportunity) {
     selectedOpportunity.value = opportunity;
     viewDialog.value = true;
+  }
+
+  async function openApplicationConversion(opportunity: Opportunity) {
+    convertingOpportunity.value = opportunity;
+    applicationDialog.value = true;
+    if (resumesLoaded) return;
+    try {
+      resumes.value = await resumeApi.list();
+      resumesLoaded = true;
+    } catch {
+      $q.notify({
+        type: "warning",
+        message: "Resumes could not be loaded; you can still create the application"
+      });
+    }
+  }
+
+  async function convertToApplication(payload: ApplicationCreate) {
+    savingApplication.value = true;
+    try {
+      await applicationApi.create(payload);
+      applicationDialog.value = false;
+      convertingOpportunity.value = null;
+      $q.notify({ type: "positive", message: "Application recorded" });
+    } catch {
+      $q.notify({ type: "negative", message: "Could not create application" });
+    } finally {
+      savingApplication.value = false;
+    }
   }
 
   async function saveOpportunity(id: string | null, payload: OpportunityCreate) {
@@ -277,8 +315,10 @@ export function useOpportunities() {
 
   return {
     opportunities,
+    resumes,
     loading,
     saving,
+    savingApplication,
     importing,
     filters,
     selectedRows,
@@ -287,6 +327,8 @@ export function useOpportunities() {
     formDialog,
     viewDialog,
     exportDialog,
+    applicationDialog,
+    convertingOpportunity,
     updatingStatusIds,
     filteredOpportunities,
     load,
@@ -294,6 +336,8 @@ export function useOpportunities() {
     openCreate,
     openEdit,
     openView,
+    openApplicationConversion,
+    convertToApplication,
     saveOpportunity,
     updateStatus,
     confirmDelete,

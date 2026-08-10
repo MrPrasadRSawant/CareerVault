@@ -27,6 +27,7 @@
       :view-opportunity="openView"
       @view="openView"
       @edit="openEdit"
+      @convert="openApplicationConversion"
       @delete="confirmDelete"
       @status-change="updateStatus"
     />
@@ -44,6 +45,15 @@
       :opportunity="selectedOpportunity"
       @edit="openEdit"
     />
+    <ApplicationFormDialog
+      v-model="applicationDialog"
+      :opportunities="opportunities"
+      :resumes="resumes"
+      :saving="savingApplication"
+      :initial-opportunity-id="convertingOpportunity?.id ?? null"
+      lock-opportunity
+      @save="convertToApplication"
+    />
     <OpportunityExportDialog
       v-model="exportDialog"
       :row-count="filteredOpportunities.length"
@@ -54,6 +64,7 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
+import ApplicationFormDialog from "@/modules/Applications/components/ApplicationFormDialog.vue";
 import OpportunityExportDialog from "./components/OpportunityExportDialog.vue";
 import OpportunityFilters from "./components/OpportunityFilters.vue";
 import OpportunityFormDialog from "./components/OpportunityFormDialog.vue";
@@ -69,7 +80,10 @@ const statusOptions = opportunityStatusOptions;
 const {
   loading,
   saving,
+  savingApplication,
   importing,
+  opportunities,
+  resumes,
   filters,
   selectedRows,
   editingOpportunity,
@@ -77,6 +91,8 @@ const {
   formDialog,
   viewDialog,
   exportDialog,
+  applicationDialog,
+  convertingOpportunity,
   updatingStatusIds,
   filteredOpportunities,
   load,
@@ -84,6 +100,8 @@ const {
   openCreate,
   openEdit,
   openView,
+  openApplicationConversion,
+  convertToApplication,
   saveOpportunity,
   updateStatus,
   confirmDelete,
