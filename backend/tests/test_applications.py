@@ -2,13 +2,13 @@ def test_application_flow(client, auth_headers):
     headers = auth_headers
 
     opportunity = client.post(
-        "/opportunities",
+        "/api/v1/opportunities",
         headers=headers,
         json={"title": "Frontend Developer"},
     ).json()
 
     created = client.post(
-        "/applications",
+        "/api/v1/applications",
         headers=headers,
         json={"opportunity_id": opportunity["id"]},
     )
@@ -17,7 +17,7 @@ def test_application_flow(client, auth_headers):
     assert application["status"] == "applied"
 
     status_updated = client.post(
-        f"/applications/{application['id']}/status",
+        f"/api/v1/applications/{application['id']}/status",
         headers=headers,
         json={"status": "interview_scheduled", "note": "First round"},
     )
@@ -25,14 +25,14 @@ def test_application_flow(client, auth_headers):
     assert status_updated.json()["status"] == "interview_scheduled"
 
     history = client.get(
-        f"/applications/{application['id']}/status-history", headers=headers
+        f"/api/v1/applications/{application['id']}/status-history", headers=headers
     )
     assert history.status_code == 200
     statuses = [entry["status"] for entry in history.json()]
     assert statuses == ["interview_scheduled"]
 
     interview = client.post(
-        "/interviews",
+        "/api/v1/interviews",
         headers=headers,
         json={
             "application_id": application["id"],
@@ -44,7 +44,7 @@ def test_application_flow(client, auth_headers):
     assert interview.json()["application_id"] == application["id"]
 
     follow_up = client.post(
-        "/follow-ups",
+        "/api/v1/follow-ups",
         headers=headers,
         json={
             "application_id": application["id"],
@@ -59,15 +59,15 @@ def test_interview_scoped_to_application_owner(client, auth_headers):
     headers = auth_headers
 
     opportunity = client.post(
-        "/opportunities", headers=headers, json={"title": "DevOps"}
+        "/api/v1/opportunities", headers=headers, json={"title": "DevOps"}
     ).json()
     application = client.post(
-        "/applications",
+        "/api/v1/applications",
         headers=headers,
         json={"opportunity_id": opportunity["id"]},
     ).json()
     interview = client.post(
-        "/interviews",
+        "/api/v1/interviews",
         headers=headers,
         json={
             "application_id": application["id"],
@@ -76,7 +76,7 @@ def test_interview_scoped_to_application_owner(client, auth_headers):
     ).json()
 
     client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": "other2@example.com",
             "full_name": "Other User",
@@ -84,7 +84,7 @@ def test_interview_scoped_to_application_owner(client, auth_headers):
         },
     )
     other_login = client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         json={"email": "other2@example.com", "password": "password123"},
     )
     other_headers = {
@@ -92,6 +92,6 @@ def test_interview_scoped_to_application_owner(client, auth_headers):
     }
 
     assert (
-        client.get(f"/interviews/{interview['id']}", headers=other_headers).status_code
+        client.get(f"/api/v1/interviews/{interview['id']}", headers=other_headers).status_code
         == 404
     )

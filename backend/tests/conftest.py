@@ -44,7 +44,7 @@ def client(db_session):
 @pytest.fixture()
 def auth_headers(client):
     client.post(
-        "/auth/register",
+        "/api/v1/auth/register",
         json={
             "email": "user@example.com",
             "full_name": "Test User",
@@ -52,7 +52,7 @@ def auth_headers(client):
         },
     )
     response = client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         json={"email": "user@example.com", "password": "password123"},
     )
     token = response.json()["access_token"]

@@ -14,7 +14,8 @@ export const OPPORTUNITY_STATUS_ORDER: OpportunityStatus[] = [
   "rejected",
   "not_replied",
   "on_hold",
-  "archived"
+  "archived",
+  "not_satisfying_expectations"
 ];
 
 export const OPPORTUNITY_STATUS_LABELS: Record<OpportunityStatus, string> = {
@@ -30,7 +31,8 @@ export const OPPORTUNITY_STATUS_LABELS: Record<OpportunityStatus, string> = {
   rejected: "Rejected",
   not_replied: "Not replied",
   on_hold: "On hold",
-  archived: "Archived"
+  archived: "Archived",
+  not_satisfying_expectations: "Not satisfying expectations"
 };
 
 export const OPPORTUNITY_STATUS_COLORS: Record<OpportunityStatus, string> = {
@@ -46,7 +48,8 @@ export const OPPORTUNITY_STATUS_COLORS: Record<OpportunityStatus, string> = {
   rejected: "var(--cv-status-interview-complete)",
   not_replied: "var(--cv-status-closed)",
   on_hold: "var(--cv-status-closed)",
-  archived: "var(--cv-status-closed)"
+  archived: "var(--cv-status-closed)",
+  not_satisfying_expectations: "var(--cv-status-closed)"
 };
 
 export const APPLICATION_STATUS_ORDER: ApplicationStatus[] = [

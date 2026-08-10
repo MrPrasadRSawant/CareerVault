@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api import ai_actions, api_keys, applications, auth, cover_letters, follow_ups, interviews, opportunities, resumes
 
-api_router = APIRouter()
+api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router)
 api_router.include_router(api_keys.router)
 api_router.include_router(ai_actions.router)

@@ -12,4 +12,7 @@
  *   readonly MY_OTHER_VAR: string;
  * }
  */
-interface ImportMetaEnv {}
+interface ImportMetaEnv {
+  readonly VITE_API_URL?: string;
+  readonly VITE_BACKEND_URL?: string;
+}

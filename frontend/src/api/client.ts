@@ -1,11 +1,7 @@
 import axios from "axios";
 
 function defaultApiBaseUrl(): string {
-  if (import.meta.env.DEV) return "/api";
-  if (typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:8000`;
-  }
-  return "http://localhost:8000";
+  return "/api/v1";
 }
 
 const api = axios.create({
