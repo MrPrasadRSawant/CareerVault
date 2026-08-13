@@ -45,3 +45,9 @@ class Application(UuidPk, Base, TimestampMixin):
     follow_ups = relationship(
         "FollowUp", back_populates="application", cascade="all, delete-orphan"
     )
+    email_follow_ups = relationship(
+        "EmailFollowUp",
+        back_populates="application",
+        cascade="all, delete-orphan",
+        order_by="EmailFollowUp.received_at.desc()",
+    )

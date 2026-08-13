@@ -3,8 +3,10 @@ from app.models.api_key import ApiKey
 from app.models.application_status_history import ApplicationStatusHistory
 from app.models.base import Base
 from app.models.cover_letter import CoverLetter
+from app.models.email_follow_up import EmailFollowUp
 from app.models.enums import (
     ApplicationStatus,
+    EmailFollowUpOutcome,
     FollowUpStatus,
     InterviewStatus,
     InterviewType,
@@ -23,6 +25,8 @@ __all__ = [
     "ApplicationStatusHistory",
     "Base",
     "CoverLetter",
+    "EmailFollowUp",
+    "EmailFollowUpOutcome",
     "FollowUp",
     "FollowUpStatus",
     "Interview",

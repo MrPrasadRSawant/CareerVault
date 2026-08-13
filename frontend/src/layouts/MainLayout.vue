@@ -123,7 +123,7 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Settings</q-item-label>
-                  <q-item-label caption>API keys and AI Actions</q-item-label>
+                  <q-item-label caption>API keys and automation APIs</q-item-label>
                 </q-item-section>
                 <q-item-section side><q-icon name="chevron_right" size="18px" /></q-item-section>
               </q-item>
@@ -281,6 +281,12 @@ const navGroups: NavGroup[] = [
         icon: "assignment",
         to: "/applications"
       },
+      {
+        name: "email-follow-ups",
+        label: "Email Follow-ups",
+        icon: "mark_email_read",
+        to: "/email-follow-ups"
+      }
     ]
   },
   {

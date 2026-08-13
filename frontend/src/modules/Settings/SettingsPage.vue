@@ -4,7 +4,7 @@
       <div>
         <div class="eyebrow">Profile settings</div>
         <h1>AI Actions</h1>
-        <p>Connect a Custom GPT or another trusted automation to your CareerVault opportunity inbox.</p>
+        <p>Connect a Custom GPT, n8n, or another trusted automation to CareerVault.</p>
       </div>
     </div>
 
@@ -50,6 +50,12 @@
           <div class="doc-block"><div class="doc-label">Authentication</div><pre>{{ authExample }}</pre><q-btn flat no-caps icon="content_copy" label="Copy" @click="copy(authExample)" /></div>
           <div class="doc-block"><div class="doc-label">OpenAPI actions</div><pre>{{ openApiExample }}</pre><q-btn flat no-caps icon="content_copy" label="Copy" @click="copy(openApiExample)" /></div>
           <q-banner rounded class="docs-note" icon="info"><span>For a Custom GPT, import <a :href="openApiUrl" target="_blank" rel="noopener">{{ openApiUrl }}</a> as the action schema, then configure an API key security scheme using the <code>X-CareerVault-Key</code> header.</span></q-banner>
+          <q-separator class="q-my-lg" />
+          <div class="card-title">Connect your n8n email agent</div>
+          <div class="card-copy">Use the same generated key and <code>X-CareerVault-Key</code> header as AI Actions. The separate email-agent contract can search this user’s applications and record classified recruiter replies.</div>
+          <div class="doc-block"><div class="doc-label">Email agent authentication</div><pre>{{ emailAuthExample }}</pre><q-btn flat no-caps icon="content_copy" label="Copy" @click="copy(emailAuthExample)" /></div>
+          <div class="doc-block"><div class="doc-label">Email agent actions</div><pre>{{ emailApiExample }}</pre><q-btn flat no-caps icon="content_copy" label="Copy" @click="copy(emailApiExample)" /></div>
+          <q-banner rounded class="docs-note" icon="mark_email_read"><span>Import <a :href="emailOpenApiUrl" target="_blank" rel="noopener">{{ emailOpenApiUrl }}</a> into the agent tool and configure its API-key header as <code>X-CareerVault-Key</code>.</span></q-banner>
         </div>
       </q-tab-panel>
     </q-tab-panels>
@@ -94,8 +100,11 @@ const backendOrigin = computed(() => {
 });
 const apiBaseUrl = computed(() => backendOrigin.value);
 const openApiUrl = computed(() => `${backendOrigin.value}/api/v1/ai/openapi.json`);
+const emailOpenApiUrl = computed(() => `${backendOrigin.value}/api/v1/email-agent/openapi.json`);
 const authExample = `X-CareerVault-Key: cvai_your_key_here`;
+const emailAuthExample = `X-CareerVault-Key: cvai_your_key_here`;
 const openApiExample = `GET /api/v1/ai/opportunities?query=python&status=draft\nPOST /api/v1/ai/opportunities\nPOST /api/v1/ai/opportunities/bulk\nPATCH /api/v1/ai/opportunities/{id}  (draft only)\nDELETE /api/v1/ai/opportunities/{id}  (draft only)`;
+const emailApiExample = `GET /api/v1/email-agent/applications?query=company-or-role\nPOST /api/v1/email-agent/follow-ups\nPATCH /api/v1/email-agent/follow-ups/{id}`;
 
 function required(value: string) { return value.trim().length > 0 || "A name is required"; }
 function formatDate(value: string) { return new Date(value).toLocaleDateString(); }

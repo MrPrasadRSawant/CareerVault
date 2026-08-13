@@ -62,3 +62,36 @@ def ai_openapi_schema(request: Request) -> JSONResponse:
 @app.get(f"{API_V1_PREFIX}/health", tags=["health"])
 def health() -> dict:
     return {"status": "ok", "app": settings.APP_NAME, "env": settings.APP_ENV}
+
+
+@app.get(f"{API_V1_PREFIX}/email-agent/openapi.json", include_in_schema=False)
+def email_agent_openapi_schema(request: Request) -> JSONResponse:
+    """Return the isolated contract for n8n and email-classification agents."""
+    full_schema = app.openapi()
+    prefix = f"{API_V1_PREFIX}/email-agent/"
+    return JSONResponse(
+        {
+            "openapi": full_schema["openapi"],
+            "info": {
+                "title": "CareerVault Email Agent API",
+                "description": "Match recruiter email replies to applications and record their outcomes.",
+                "version": full_schema["info"].get("version", "1.0.0"),
+            },
+            "servers": [{"url": str(request.base_url).rstrip("/")}],
+            "paths": {
+                path: definition
+                for path, definition in full_schema.get("paths", {}).items()
+                if path.startswith(prefix) and path != f"{prefix}openapi.json"
+            },
+            "components": {
+                "schemas": full_schema.get("components", {}).get("schemas", {}),
+                "securitySchemes": {
+                    "APIKeyHeader": {
+                        "type": "apiKey",
+                        "in": "header",
+                        "name": "X-CareerVault-Key",
+                    }
+                },
+            },
+        }
+    )

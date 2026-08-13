@@ -50,3 +50,9 @@ class FollowUpStatus(str, enum.Enum):
     SENT = "sent"
     DONE = "done"
     SKIPPED = "skipped"
+
+
+class EmailFollowUpOutcome(str, enum.Enum):
+    PENDING = "pending"
+    WON = "won"
+    LOST = "lost"

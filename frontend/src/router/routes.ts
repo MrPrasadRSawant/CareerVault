@@ -35,6 +35,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/modules/Applications/ApplicationsPage.vue")
       },
       {
+        path: "email-follow-ups",
+        name: "email-follow-ups",
+        component: () =>
+          import("@/modules/EmailFollowUps/EmailFollowUpsPage.vue")
+      },
+      {
         path: "cover-letters",
         name: "cover-letters",
         component: () => import("@/modules/CoverLetters/CoverLettersPage.vue")

@@ -10,6 +10,13 @@ from app.schemas.api_key import ApiKeyCreate, ApiKeyCreated, ApiKeyRead, ApiKeyU
 from app.schemas.auth import LoginRequest, Token, TokenWithUser
 from app.schemas.common import Message, ORMModel
 from app.schemas.cover_letter import CoverLetterCreate, CoverLetterRead, CoverLetterUpdate
+from app.schemas.email_follow_up import (
+    EmailAgentApplication,
+    EmailFollowUpCreate,
+    EmailFollowUpGroup,
+    EmailFollowUpRead,
+    EmailFollowUpUpdate,
+)
 from app.schemas.follow_up import FollowUpCreate, FollowUpRead, FollowUpUpdate
 from app.schemas.interview import InterviewCreate, InterviewRead, InterviewUpdate
 from app.schemas.opportunity import (
@@ -38,6 +45,11 @@ __all__ = [
     "CoverLetterCreate",
     "CoverLetterRead",
     "CoverLetterUpdate",
+    "EmailAgentApplication",
+    "EmailFollowUpCreate",
+    "EmailFollowUpGroup",
+    "EmailFollowUpRead",
+    "EmailFollowUpUpdate",
     "FollowUpCreate",
     "FollowUpRead",
     "FollowUpUpdate",

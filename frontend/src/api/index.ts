@@ -28,3 +28,11 @@ export type { Interview, InterviewCreate } from "./interviews";
 
 export { followUpApi } from "./followUps";
 export type { FollowUp, FollowUpCreate } from "./followUps";
+
+export { emailFollowUpApi } from "./emailFollowUps";
+export type {
+  EmailFollowUp,
+  EmailFollowUpGroup,
+  EmailFollowUpOutcome,
+  EmailFollowUpPayload
+} from "./emailFollowUps";
