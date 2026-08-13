@@ -8,10 +8,12 @@ import {
   type EmailFollowUpPayload
 } from "@/api/emailFollowUps";
 import { opportunityApi } from "@/api/opportunities";
+import { useNotificationStore } from "@/stores/notifications";
 import type { ApplicationChoice, EmailFollowUpFilters } from "../types";
 
 export function useEmailFollowUps() {
   const $q = useQuasar();
+  const notificationStore = useNotificationStore();
   const groups = ref<EmailFollowUpGroup[]>([]);
   const applicationChoices = ref<ApplicationChoice[]>([]);
   const loading = ref(false);
@@ -83,6 +85,7 @@ export function useEmailFollowUps() {
     try {
       await emailFollowUpApi.create(payload);
       await load();
+      await notificationStore.refreshUnseenCount();
       $q.notify({ type: "positive", message: "Email follow-up recorded" });
       return true;
     } catch {

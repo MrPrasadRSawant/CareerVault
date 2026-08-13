@@ -19,6 +19,11 @@ from app.schemas.email_follow_up import (
 )
 from app.schemas.follow_up import FollowUpCreate, FollowUpRead, FollowUpUpdate
 from app.schemas.interview import InterviewCreate, InterviewRead, InterviewUpdate
+from app.schemas.notification import (
+    NotificationCountRead,
+    NotificationRead,
+    NotificationSeenUpdate,
+)
 from app.schemas.opportunity import (
     OpportunityBulkDelete,
     OpportunityBulkDeleteRead,
@@ -58,6 +63,9 @@ __all__ = [
     "InterviewUpdate",
     "LoginRequest",
     "Message",
+    "NotificationCountRead",
+    "NotificationRead",
+    "NotificationSeenUpdate",
     "OpportunityBulkDelete",
     "OpportunityBulkDeleteRead",
     "OpportunityCreate",

@@ -21,6 +21,7 @@ from app.services.email_follow_up_service import (
     email_follow_up_create_values,
     email_follow_up_update_values,
 )
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/email-follow-ups", tags=["email follow-ups"])
 
@@ -108,10 +109,16 @@ def create_email_follow_up(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> EmailFollowUp:
-    ApplicationRepository(db).get_owned(current_user.id, payload.application_id)
-    return EmailFollowUpRepository(db).create(
+    application = ApplicationRepository(db).get_owned(
+        current_user.id, payload.application_id
+    )
+    email = EmailFollowUpRepository(db).create(
         **email_follow_up_create_values(payload)
     )
+    NotificationService(db).email_follow_up_added(
+        current_user.id, email, application
+    )
+    return email
 
 
 @router.get("/{email_follow_up_id}", response_model=EmailFollowUpRead)

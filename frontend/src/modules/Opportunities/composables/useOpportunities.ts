@@ -10,6 +10,7 @@ import type {
 } from "@/api/opportunities";
 import { resumeApi } from "@/api/resumes";
 import type { Resume } from "@/api/resumes";
+import { useNotificationStore } from "@/stores/notifications";
 import {
   csvEscape,
   createDefaultFilters,
@@ -25,6 +26,7 @@ import type {
 
 export function useOpportunities() {
   const $q = useQuasar();
+  const notificationStore = useNotificationStore();
   const opportunities = ref<Opportunity[]>([]);
   const resumes = ref<Resume[]>([]);
   const loading = ref(false);
@@ -162,6 +164,7 @@ export function useOpportunities() {
         message: id ? "Opportunity updated" : "Opportunity created"
       });
       if (!id) await load();
+      if (!id) await notificationStore.refreshUnseenCount();
     } catch {
       $q.notify({ type: "negative", message: "Could not save opportunity" });
     } finally {
@@ -276,6 +279,7 @@ export function useOpportunities() {
       }
       $q.notify({ type: "positive", message: `${imported} opportunities imported as drafts` });
       await load();
+      await notificationStore.refreshUnseenCount();
     } catch {
       $q.notify({ type: "negative", message: "Could not import CSV. Download the template to check the column names." });
     } finally {

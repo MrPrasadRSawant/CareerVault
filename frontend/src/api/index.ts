@@ -36,3 +36,10 @@ export type {
   EmailFollowUpOutcome,
   EmailFollowUpPayload
 } from "./emailFollowUps";
+
+export { notificationApi } from "./notifications";
+export type {
+  Notification,
+  NotificationCount,
+  NotificationType
+} from "./notifications";

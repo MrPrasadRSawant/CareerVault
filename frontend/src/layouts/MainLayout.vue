@@ -82,12 +82,21 @@
           >
             <template #label>
               <div class="user-chip">
-                <q-avatar
-                  icon="person"
-                  size="30px"
-                  color="primary"
-                  text-color="white"
-                />
+                <div class="user-avatar-wrap">
+                  <q-avatar
+                    icon="person"
+                    size="30px"
+                    color="primary"
+                    text-color="white"
+                  />
+                  <q-badge
+                    v-if="notificationStore.unseenCount > 0"
+                    rounded
+                    color="negative"
+                    class="profile-notification-badge"
+                    :label="notificationStore.badgeLabel"
+                  />
+                </div>
                 <div class="user-chip-text q-hide-sm-and-down">
                   <div class="user-name">{{ auth.user.full_name }}</div>
                   <div class="user-email">{{ auth.user.email }}</div>
@@ -116,6 +125,27 @@
               </q-item>
 
               <q-separator spaced />
+
+              <q-item clickable v-ripple to="/notifications" exact class="profile-menu-item">
+                <q-item-section avatar>
+                  <q-icon name="notifications" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Notifications</q-item-label>
+                  <q-item-label caption>
+                    {{ notificationCaption }}
+                  </q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-badge
+                    v-if="notificationStore.unseenCount > 0"
+                    rounded
+                    color="negative"
+                    :label="notificationStore.badgeLabel"
+                  />
+                  <q-icon v-else name="chevron_right" size="18px" />
+                </q-item-section>
+              </q-item>
 
               <q-item clickable v-ripple to="/settings" exact class="profile-menu-item">
                 <q-item-section avatar>
@@ -239,9 +269,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useNotificationStore } from "@/stores/notifications";
 
 interface NavItem {
   name: string;
@@ -257,12 +288,19 @@ interface NavGroup {
 }
 
 const auth = useAuthStore();
+const notificationStore = useNotificationStore();
 const router = useRouter();
 const route = useRoute();
 
 const currentYear = new Date().getFullYear();
 const leftDrawerOpen = ref(false);
 const userInitials = computed(() => auth.user?.full_name?.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "CV");
+const notificationCaption = computed(() =>
+  notificationStore.unseenCount > 0
+    ? `${notificationStore.unseenCount} unseen notification${notificationStore.unseenCount === 1 ? "" : "s"}`
+    : "You’re all caught up"
+);
+let notificationPoll: ReturnType<typeof setInterval> | undefined;
 
 const navGroups: NavGroup[] = [
   {
@@ -338,9 +376,18 @@ function goDashboard() {
 
 onMounted(() => {
   void auth.loadUser();
+  void notificationStore.refreshUnseenCount();
+  notificationPoll = setInterval(() => {
+    void notificationStore.refreshUnseenCount();
+  }, 30_000);
+});
+
+onBeforeUnmount(() => {
+  if (notificationPoll) clearInterval(notificationPoll);
 });
 
 function onLogout() {
+  notificationStore.clear();
   auth.logout();
   void router.push({ name: "login" });
 }
@@ -481,6 +528,24 @@ function onLogout() {
   &:hover {
     background: rgba(142, 202, 230, 0.22);
   }
+}
+
+.user-avatar-wrap {
+  position: relative;
+  display: flex;
+}
+
+.profile-notification-badge {
+  position: absolute;
+  top: -7px;
+  left: -8px;
+  z-index: 2;
+  min-width: 17px;
+  min-height: 17px;
+  padding: 2px 4px;
+  border: 2px solid #174f65;
+  font-size: 9px;
+  font-weight: 800;
 }
 
 .user-chip-text {

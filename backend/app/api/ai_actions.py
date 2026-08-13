@@ -13,6 +13,7 @@ from app.models.user import User
 from app.repositories.opportunity_repository import OpportunityRepository
 from app.schemas import Message, OpportunityRead
 from app.schemas.ai_actions import AiOpportunityBatchCreate, AiOpportunityCreate, AiOpportunityUpdate
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/ai", tags=["AI Actions"])
 
@@ -57,7 +58,9 @@ def create_opportunity(
     now = datetime.now(timezone.utc)
     values = payload.model_dump()
     values["status"] = OpportunityStatus.DRAFT
-    return OpportunityRepository(db).create(created_by=current_user.id, created_on_utc=now, updated_by=current_user.id, updated_on_utc=now, **values)
+    opportunity = OpportunityRepository(db).create(created_by=current_user.id, created_on_utc=now, updated_by=current_user.id, updated_on_utc=now, **values)
+    NotificationService(db).opportunity_added(current_user.id, opportunity)
+    return opportunity
 
 
 @router.post("/opportunities/bulk", response_model=list[OpportunityRead], status_code=status.HTTP_201_CREATED)
@@ -77,6 +80,12 @@ def create_opportunities_bulk(
     db.commit()
     for opportunity in created:
         db.refresh(opportunity)
+    notification_service = NotificationService(db)
+    for opportunity in created:
+        notification_service.opportunity_added(
+            current_user.id, opportunity, commit=False
+        )
+    db.commit()
     return created
 
 

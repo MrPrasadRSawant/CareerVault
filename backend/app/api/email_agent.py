@@ -22,6 +22,7 @@ from app.services.email_follow_up_service import (
     email_follow_up_create_values,
     email_follow_up_update_values,
 )
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/email-agent", tags=["email agent"])
 
@@ -81,7 +82,9 @@ def record_email_follow_up(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_api_key),
 ) -> EmailFollowUp:
-    ApplicationRepository(db).get_owned(current_user.id, payload.application_id)
+    application = ApplicationRepository(db).get_owned(
+        current_user.id, payload.application_id
+    )
     repo = EmailFollowUpRepository(db)
     if payload.external_message_id:
         existing = repo.find_by_external_message(
@@ -89,7 +92,11 @@ def record_email_follow_up(
         )
         if existing is not None:
             return existing
-    return repo.create(**email_follow_up_create_values(payload))
+    email = repo.create(**email_follow_up_create_values(payload))
+    NotificationService(db).email_follow_up_added(
+        current_user.id, email, application
+    )
+    return email
 
 
 @router.patch("/follow-ups/{email_follow_up_id}", response_model=EmailFollowUpRead)

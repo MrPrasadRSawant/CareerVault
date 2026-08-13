@@ -19,6 +19,7 @@ from app.schemas import (
     OpportunityRead,
     OpportunityUpdate,
 )
+from app.services.notification_service import NotificationService
 
 router = APIRouter(prefix="/opportunities", tags=["opportunities"])
 
@@ -55,13 +56,15 @@ def create_opportunity(
     current_user: User = Depends(get_current_user),
 ):
     now = datetime.now(timezone.utc)
-    return OpportunityRepository(db).create(
+    opportunity = OpportunityRepository(db).create(
         created_by=current_user.id,
         created_on_utc=now,
         updated_by=current_user.id,
         updated_on_utc=now,
         **payload.model_dump()
     )
+    NotificationService(db).opportunity_added(current_user.id, opportunity)
+    return opportunity
 
 
 @router.post("/bulk-delete", response_model=OpportunityBulkDeleteRead)

@@ -56,3 +56,8 @@ class EmailFollowUpOutcome(str, enum.Enum):
     PENDING = "pending"
     WON = "won"
     LOST = "lost"
+
+
+class NotificationType(str, enum.Enum):
+    OPPORTUNITY = "opportunity"
+    EMAIL_FOLLOW_UP = "email_follow_up"
