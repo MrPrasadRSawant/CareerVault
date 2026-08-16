@@ -225,6 +225,33 @@ class AuthService:
         self.user_repo.reset_failed_login_attempts(user.id)
         return user
 
+    def change_password(
+        self,
+        user: User,
+        current_password: str,
+        new_password: str,
+    ) -> None:
+        if not verify_password(current_password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect",
+            )
+        if verify_password(new_password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="New password must be different from the current password",
+            )
+        minimum, maximum = self.settings_repo.get_password_length_policy()
+        if not minimum <= len(new_password) <= maximum:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=(
+                    f"Password must contain between {minimum} and {maximum} "
+                    "characters"
+                ),
+            )
+        self.user_repo.update_password(user, hash_password(new_password))
+
     def issue_token(
         self,
         user: User,

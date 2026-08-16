@@ -175,6 +175,24 @@
               <q-item
                 clickable
                 v-ripple
+                v-close-popup
+                class="profile-menu-item"
+                @click="changePasswordOpen = true"
+              >
+                <q-item-section avatar
+                  ><q-icon name="password"
+                /></q-item-section>
+                <q-item-section>
+                  <q-item-label>Change password</q-item-label>
+                  <q-item-label caption
+                    >Update your account password</q-item-label
+                  >
+                </q-item-section>
+              </q-item>
+              <q-separator spaced />
+              <q-item
+                clickable
+                v-ripple
                 class="profile-menu-item profile-menu-item--danger"
                 @click="onLogout"
               >
@@ -265,6 +283,7 @@
     </q-drawer>
 
     <q-page-container class="page-container"><router-view /></q-page-container>
+    <ChangePasswordDialog v-model="changePasswordOpen" />
   </q-layout>
 </template>
 
@@ -273,6 +292,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useNotificationStore } from "@/stores/notifications";
+import ChangePasswordDialog from "@/modules/shared/components/ChangePasswordDialog.vue";
 
 interface NavItem {
   name: string;
@@ -294,6 +314,7 @@ const route = useRoute();
 const currentYear = new Date().getFullYear();
 const leftDrawerOpen = ref(false);
 const globalSearch = ref("");
+const changePasswordOpen = ref(false);
 const userInitials = computed(
   () =>
     auth.user?.full_name

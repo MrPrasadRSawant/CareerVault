@@ -84,3 +84,7 @@ class UserRepository(BaseRepository[User]):
             .execution_options(synchronize_session=False)
         )
         self.db.commit()
+
+    def update_password(self, user: User, hashed_password: str) -> None:
+        user.hashed_password = hashed_password
+        self.db.commit()

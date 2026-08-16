@@ -60,6 +60,19 @@
               </q-item-section>
             </q-item>
             <q-separator spaced />
+            <q-item
+              clickable
+              v-close-popup
+              class="admin-menu-item"
+              @click="changePasswordOpen = true"
+            >
+              <q-item-section avatar><q-icon name="password" /></q-item-section>
+              <q-item-section>
+                <q-item-label>Change password</q-item-label>
+                <q-item-label caption>Update account security</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-separator spaced />
             <q-item clickable v-close-popup class="logout-item" @click="logout">
               <q-item-section avatar><q-icon name="logout" /></q-item-section>
               <q-item-section>Sign out</q-item-section>
@@ -119,6 +132,7 @@
     <q-page-container class="admin-page-container"
       ><router-view
     /></q-page-container>
+    <ChangePasswordDialog v-model="changePasswordOpen" />
   </q-layout>
 </template>
 
@@ -127,6 +141,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import UserInitialsAvatar from "@/modules/SystemAdmin/components/UserInitialsAvatar.vue";
+import ChangePasswordDialog from "@/modules/shared/components/ChangePasswordDialog.vue";
 
 defineOptions({ name: "SystemAdminLayout" });
 
@@ -134,6 +149,7 @@ const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const drawerOpen = ref(false);
+const changePasswordOpen = ref(false);
 const navItems = [
   {
     name: "system-admin-overview",
@@ -279,6 +295,19 @@ async function logout() {
   padding: 11px;
   border-radius: 9px;
   background: #f6f8fb;
+}
+.admin-menu-item {
+  min-height: 50px;
+  border-radius: 8px;
+  color: #405067;
+}
+.admin-menu-item:hover {
+  color: #1769e0;
+  background: #f3f7fd;
+}
+.admin-menu-item :deep(.q-item__section--avatar) {
+  min-width: 38px;
+  color: #64748b;
 }
 .logout-item {
   min-height: 48px;

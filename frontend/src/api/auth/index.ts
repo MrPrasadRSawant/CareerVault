@@ -29,6 +29,15 @@ export const authApi = {
     return api.post("/auth/login", { email, password }).then(r => r.data);
   },
 
+  changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    return api
+      .post("/auth/change-password", {
+        current_password: currentPassword,
+        new_password: newPassword
+      })
+      .then(() => undefined);
+  },
+
   logout(): Promise<void> {
     return api.post("/auth/logout").then(() => undefined);
   },

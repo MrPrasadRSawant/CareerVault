@@ -12,6 +12,7 @@ from app.core.security import decode_access_token
 from app.models.enums import AuthEventType
 from app.models.user import User
 from app.schemas import LoginRequest, TokenWithUser, UserCreate, UserRead
+from app.schemas.auth import ChangePasswordRequest
 from app.schemas.system_setting import PasswordPolicyRead
 from app.services.auth_service import AuthService
 from app.services.system_setting_service import SystemSettingService
@@ -92,3 +93,16 @@ def logout(
 @router.get("/me", response_model=UserRead)
 def read_me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: User = Depends(get_authenticated_user),
+    db: Session = Depends(get_db),
+) -> None:
+    AuthService(db).change_password(
+        current_user,
+        payload.current_password,
+        payload.new_password,
+    )
