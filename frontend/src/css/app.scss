@@ -1,27 +1,28 @@
 // app global css
 
 :root {
-  --cv-primary: #1f6f8b;
-  --cv-secondary: #6c8e9e;
-  --cv-navy: #102a43;
-  --cv-amber: #d99a2b;
-  --cv-orange: #b7791f;
-  --cv-page: #f5f8fa;
+  --cv-primary: #1769e0;
+  --cv-secondary: #63728a;
+  --cv-navy: #172033;
+  --cv-amber: #e8a11a;
+  --cv-orange: #b87808;
+  --cv-page: #f3f5f7;
   --cv-surface: #ffffff;
   --cv-surface-soft: #f7fafc;
-  --cv-border: #dce6eb;
-  --cv-border-light: #edf2f5;
-  --cv-text: #243b53;
-  --cv-muted: #627d98;
-  --cv-muted-light: #829ab1;
-  --cv-text-strong: #334e68;
-  --cv-primary-dark: #126e91;
-  --cv-primary-soft: #e7f3f8;
+  --cv-border: #dfe4ea;
+  --cv-border-light: #edf0f3;
+  --cv-text: #354154;
+  --cv-muted: #657184;
+  --cv-muted-light: #8a95a5;
+  --cv-text-strong: #263449;
+  --cv-primary-dark: #145bc2;
+  --cv-primary-soft: #eaf2ff;
   --cv-empty-soft: #f0f3f5;
   --cv-white: #ffffff;
-  --cv-focus-ring: rgba(18, 110, 145, 0.25);
-  --cv-shadow-card: 0 4px 18px rgba(16, 42, 67, 0.08);
-  --cv-shadow-tooltip: 0 18px 40px rgba(16, 42, 67, 0.28), 0 5px 14px rgba(16, 42, 67, 0.18);
+  --cv-focus-ring: rgba(23, 105, 224, 0.24);
+  --cv-shadow-card: 0 3px 14px rgba(30, 42, 56, 0.07);
+  --cv-shadow-tooltip:
+    0 18px 40px rgba(23, 32, 51, 0.24), 0 5px 14px rgba(23, 32, 51, 0.14);
   --cv-status-draft: #94a3b8;
   --cv-status-applied-soft: #8ecae6;
   --cv-status-applied: #219ebc;
@@ -38,9 +39,52 @@ html {
 body {
   background-color: var(--cv-page);
   color: var(--cv-text);
-  font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    Roboto,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--cv-primary);
+}
+
+.q-btn {
+  letter-spacing: 0;
+}
+
+.q-btn--rectangle {
+  border-radius: 8px;
+}
+
+.q-field--outlined .q-field__control {
+  border-radius: 8px;
+}
+
+.q-table__container {
+  color: var(--cv-text);
+  background: var(--cv-surface);
+}
+
+.q-table thead tr,
+.q-table th {
+  color: #727e90;
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.q-table tbody td {
+  border-color: var(--cv-border-light);
+}
+.q-table tbody tr:hover {
+  background: #f8faff;
 }
 
 ::selection {

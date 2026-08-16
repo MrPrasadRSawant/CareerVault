@@ -56,7 +56,10 @@
           <tr v-for="item in legendItems" :key="item.label">
             <td>
               <span class="status-name">
-                <span class="legend-dot" :style="{ background: item.color }"></span>
+                <span
+                  class="legend-dot"
+                  :style="{ background: item.color }"
+                ></span>
                 {{ item.label }}
               </span>
             </td>
@@ -108,15 +111,19 @@ const segments = computed(() => {
 <style lang="scss" scoped>
 .donut-wrap {
   display: grid;
-  grid-template-columns: minmax(160px, 210px) minmax(0, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   align-items: center;
   gap: 28px;
+  width: 100%;
+  min-width: 0;
   min-height: 210px;
+  overflow: hidden;
 }
 
 .donut-chart {
   width: 100%;
   max-width: 190px;
+  margin-inline: auto;
 }
 
 .donut-svg {
@@ -145,11 +152,13 @@ const segments = computed(() => {
 
 .summary-table-wrap {
   width: 100%;
-  overflow-x: auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .summary-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   color: #475569;
   font-size: 13px;
@@ -193,7 +202,9 @@ const segments = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
   font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
 .legend-dot {
@@ -212,7 +223,7 @@ const segments = computed(() => {
 }
 
 .summary-table .numeric-column {
-  width: 82px;
+  width: 62px;
   text-align: right;
 }
 
@@ -226,8 +237,6 @@ const segments = computed(() => {
 
 @media (max-width: 700px) {
   .donut-wrap {
-    display: flex;
-    flex-direction: column;
     gap: 18px;
   }
 

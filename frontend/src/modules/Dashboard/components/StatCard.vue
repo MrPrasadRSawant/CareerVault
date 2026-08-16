@@ -7,7 +7,10 @@
       <q-icon :name="icon" size="22px" />
     </div>
     <div class="stat-value">
-      {{ value }}<span v-if="valueSuffix" class="stat-value-suffix">{{ valueSuffix }}</span>
+      {{ value
+      }}<span v-if="valueSuffix" class="stat-value-suffix">{{
+        valueSuffix
+      }}</span>
     </div>
     <div class="stat-label">{{ label }}</div>
     <div class="stat-hint">{{ hint }}</div>
@@ -34,19 +37,20 @@ defineProps<{
 .stat-card {
   display: block;
   background: #fff;
-  border: 1px solid #e6edf1;
-  border-radius: 14px;
-  padding: 20px;
+  border: 1px solid #dfe4ea;
+  border-radius: 12px;
+  padding: 18px;
   height: 100%;
   text-decoration: none;
-  box-shadow: 0 1px 3px rgba(2, 48, 71, 0.06);
+  box-shadow: 0 1px 2px rgba(30, 42, 56, 0.04);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(2, 48, 71, 0.1);
+    transform: translateY(-1px);
+    border-color: #c8d5e8;
+    box-shadow: 0 7px 18px rgba(30, 50, 80, 0.09);
   }
 }
 
@@ -63,7 +67,7 @@ defineProps<{
 .stat-value {
   font-size: 30px;
   font-weight: 700;
-  color: #023047;
+  color: #172033;
   line-height: 1.1;
 }
 
@@ -77,12 +81,12 @@ defineProps<{
   margin-top: 4px;
   font-size: 13.5px;
   font-weight: 600;
-  color: #475569;
+  color: #4f5b6c;
 }
 
 .stat-hint {
   margin-top: 2px;
   font-size: 12px;
-  color: #94a3b8;
+  color: #8a95a5;
 }
 </style>

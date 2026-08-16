@@ -1,13 +1,12 @@
 <template>
   <q-layout view="hHh Lpr lFf">
-    <q-header elevated class="app-header">
+    <q-header class="app-header">
       <q-toolbar class="app-toolbar">
         <q-btn
           flat
           round
           dense
           icon="menu"
-          color="white"
           aria-label="Open navigation menu"
           aria-controls="mobile-navigation-drawer"
           :aria-expanded="leftDrawerOpen"
@@ -20,40 +19,57 @@
           role="link"
           tabindex="0"
           @click="goDashboard"
+          @keyup.enter="goDashboard"
         >
-          <div class="toolbar-brand-mark">
-            <q-icon name="rocket_launch" size="18px" />
-          </div>
+          <div class="toolbar-brand-mark" aria-hidden="true">CV</div>
           <span>Career<span class="brand-accent">Vault</span></span>
         </div>
 
+        <form class="vault-search" role="search" @submit.prevent="submitSearch">
+          <q-input
+            v-model="globalSearch"
+            dense
+            outlined
+            clearable
+            placeholder="Search opportunities, companies..."
+            aria-label="Search CareerVault"
+          >
+            <template #prepend><q-icon name="search" size="20px" /></template>
+          </q-input>
+        </form>
+
         <q-space />
 
-        <nav class="header-nav" aria-label="Primary">
+        <nav class="header-nav" aria-label="Primary navigation">
           <q-btn
+            v-for="item in primaryNavItems"
+            :key="item.name"
             flat
             no-caps
-            :class="{ 'nav-trigger--active': isActive('dashboard') }"
+            :to="item.to"
+            :class="{ 'nav-trigger--active': isActive(item.name) }"
             class="nav-trigger"
-            icon="dashboard"
-            label="Dashboard"
-            to="/dashboard"
-          />
+          >
+            <q-icon :name="item.icon" size="21px" class="nav-icon" />
+            <span>{{ item.shortLabel || item.label }}</span>
+          </q-btn>
 
           <q-btn-dropdown
-            v-for="group in navGroups"
-            :key="group.label"
             flat
             no-caps
-            :icon="group.icon"
-            :label="group.label"
-            :class="{ 'nav-trigger--active': isGroupActive(group) }"
-            class="nav-trigger nav-dropdown"
+            class="nav-trigger nav-more"
+            :class="{ 'nav-trigger--active': isGroupActive(moreGroup) }"
             content-class="nav-menu"
           >
+            <template #label>
+              <div class="nav-trigger-content">
+                <q-icon name="apps" size="21px" />
+                <span>More</span>
+              </div>
+            </template>
             <q-list padding>
               <q-item
-                v-for="item in group.items"
+                v-for="item in moreGroup.items"
                 :key="item.name"
                 clickable
                 v-ripple
@@ -63,9 +79,9 @@
                 class="nav-item"
                 exact
               >
-                <q-item-section avatar>
-                  <q-icon :name="item.icon" />
-                </q-item-section>
+                <q-item-section avatar
+                  ><q-icon :name="item.icon"
+                /></q-item-section>
                 <q-item-section>{{ item.label }}</q-item-section>
               </q-item>
             </q-list>
@@ -73,6 +89,23 @@
         </nav>
 
         <template v-if="auth.user">
+          <q-btn
+            flat
+            round
+            class="notification-button"
+            icon="notifications_none"
+            aria-label="Notifications"
+            to="/notifications"
+          >
+            <q-badge
+              v-if="notificationStore.unseenCount > 0"
+              floating
+              rounded
+              color="negative"
+              :label="notificationStore.badgeLabel"
+            />
+          </q-btn>
+
           <q-btn-dropdown
             flat
             no-caps
@@ -82,90 +115,71 @@
           >
             <template #label>
               <div class="user-chip">
-                <div class="user-avatar-wrap">
-                  <q-avatar
-                    icon="person"
-                    size="30px"
-                    color="primary"
-                    text-color="white"
-                  />
-                  <q-badge
-                    v-if="notificationStore.unseenCount > 0"
-                    rounded
-                    color="negative"
-                    class="profile-notification-badge"
-                    :label="notificationStore.badgeLabel"
-                  />
-                </div>
+                <q-avatar size="34px" class="profile-avatar">{{
+                  userInitials
+                }}</q-avatar>
                 <div class="user-chip-text q-hide-sm-and-down">
-                  <div class="user-name">{{ auth.user.full_name }}</div>
-                  <div class="user-email">{{ auth.user.email }}</div>
+                  <div class="user-name">{{ firstName }}</div>
+                  <div class="user-account">My account</div>
                 </div>
-                <q-icon name="arrow_drop_down" size="18px" class="user-caret" />
               </div>
             </template>
 
             <q-list padding>
               <q-item class="user-menu-header">
                 <q-item-section avatar>
-                  <q-avatar size="42px" class="profile-avatar">{{ userInitials }}</q-avatar>
+                  <q-avatar size="46px" class="profile-avatar">{{
+                    userInitials
+                  }}</q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label class="user-menu-name">
-                    {{ auth.user.full_name }}
-                  </q-item-label>
-                  <q-item-label caption class="user-menu-email">
-                    {{ auth.user.email }}
-                  </q-item-label>
-                  <q-item-label caption class="user-menu-account">Personal account</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-icon name="verified_user" color="positive" size="18px" />
+                  <q-item-label class="user-menu-name">{{
+                    auth.user.full_name
+                  }}</q-item-label>
+                  <q-item-label caption class="user-menu-email">{{
+                    auth.user.email
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
-
               <q-separator spaced />
-
-              <q-item clickable v-ripple to="/notifications" exact class="profile-menu-item">
-                <q-item-section avatar>
-                  <q-icon name="notifications" />
-                </q-item-section>
+              <q-item
+                clickable
+                v-ripple
+                to="/notifications"
+                exact
+                class="profile-menu-item"
+              >
+                <q-item-section avatar
+                  ><q-icon name="notifications_none"
+                /></q-item-section>
                 <q-item-section>
                   <q-item-label>Notifications</q-item-label>
-                  <q-item-label caption>
-                    {{ notificationCaption }}
-                  </q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-badge
-                    v-if="notificationStore.unseenCount > 0"
-                    rounded
-                    color="negative"
-                    :label="notificationStore.badgeLabel"
-                  />
-                  <q-icon v-else name="chevron_right" size="18px" />
+                  <q-item-label caption>{{ notificationCaption }}</q-item-label>
                 </q-item-section>
               </q-item>
-
-              <q-item clickable v-ripple to="/settings" exact class="profile-menu-item">
-                <q-item-section avatar>
-                  <q-icon name="settings" />
-                </q-item-section>
+              <q-item
+                clickable
+                v-ripple
+                to="/settings"
+                exact
+                class="profile-menu-item"
+              >
+                <q-item-section avatar
+                  ><q-icon name="settings"
+                /></q-item-section>
                 <q-item-section>
                   <q-item-label>Settings</q-item-label>
-                  <q-item-label caption>API keys and automation APIs</q-item-label>
+                  <q-item-label caption>Account and integrations</q-item-label>
                 </q-item-section>
-                <q-item-section side><q-icon name="chevron_right" size="18px" /></q-item-section>
               </q-item>
-
-              <q-item clickable v-ripple class="profile-menu-item profile-menu-item--danger" @click="onLogout">
-                <q-item-section avatar>
-                  <q-icon name="logout" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Sign out</q-item-label>
-                  <q-item-label caption>End this session</q-item-label>
-                </q-item-section>
+              <q-item
+                clickable
+                v-ripple
+                class="profile-menu-item profile-menu-item--danger"
+                @click="onLogout"
+              >
+                <q-item-section avatar><q-icon name="logout" /></q-item-section>
+                <q-item-section>Sign out</q-item-section>
               </q-item>
             </q-list>
           </q-btn-dropdown>
@@ -176,17 +190,14 @@
     <q-drawer
       id="mobile-navigation-drawer"
       v-model="leftDrawerOpen"
-      :width="240"
+      :width="280"
       :breakpoint="1023"
       behavior="mobile"
-      dark
       aria-label="Mobile navigation"
     >
       <div class="drawer-content">
         <div class="drawer-brand">
-          <div class="drawer-brand-mark">
-            <q-icon name="rocket_launch" size="16px" />
-          </div>
+          <div class="toolbar-brand-mark">CV</div>
           <span>Career<span class="brand-accent">Vault</span></span>
           <q-space />
           <q-btn
@@ -194,44 +205,27 @@
             round
             dense
             icon="close"
-            color="white"
             aria-label="Close navigation menu"
-            class="drawer-close"
             @click="leftDrawerOpen = false"
           />
         </div>
 
+        <div v-if="auth.user" class="drawer-profile">
+          <q-avatar size="44px" class="profile-avatar">{{
+            userInitials
+          }}</q-avatar>
+          <div>
+            <div class="drawer-profile-name">{{ auth.user.full_name }}</div>
+            <div class="drawer-profile-email">{{ auth.user.email }}</div>
+          </div>
+        </div>
+
         <q-scroll-area class="drawer-scroll">
           <q-list padding>
-            <q-item-label header class="drawer-section-label">
-              Menu
-            </q-item-label>
-
-            <q-item
-              v-for="item in dashboardItems"
-              :key="item.name"
-              clickable
-              v-ripple
-              :to="item.to"
-              :active="isActive(item.name)"
-              active-class="menu-item--active"
-              class="menu-item"
-              exact
-              @click="leftDrawerOpen = false"
-            >
-              <q-item-section avatar>
-                <q-icon :name="item.icon" />
-              </q-item-section>
-              <q-item-section>
-                {{ item.label }}
-              </q-item-section>
-            </q-item>
-
-            <template v-for="group in navGroups" :key="group.label">
-              <q-item-label header class="drawer-section-label">
-                {{ group.label }}
-              </q-item-label>
-
+            <template v-for="group in mobileNavGroups" :key="group.label">
+              <q-item-label header class="drawer-section-label">{{
+                group.label
+              }}</q-item-label>
               <q-item
                 v-for="item in group.items"
                 :key="item.name"
@@ -244,27 +238,33 @@
                 exact
                 @click="leftDrawerOpen = false"
               >
-                <q-item-section avatar>
-                  <q-icon :name="item.icon" />
-                </q-item-section>
-                <q-item-section>
-                  {{ item.label }}
+                <q-item-section avatar
+                  ><q-icon :name="item.icon"
+                /></q-item-section>
+                <q-item-section>{{ item.label }}</q-item-section>
+                <q-item-section
+                  v-if="
+                    item.name === 'notifications' &&
+                    notificationStore.unseenCount
+                  "
+                  side
+                >
+                  <q-badge
+                    rounded
+                    color="negative"
+                    :label="notificationStore.badgeLabel"
+                  />
                 </q-item-section>
               </q-item>
             </template>
           </q-list>
         </q-scroll-area>
 
-        <div class="drawer-footer">
-          <q-icon name="copyright" size="14px" />
-          {{ currentYear }} CareerVault
-        </div>
+        <div class="drawer-footer">CareerVault · {{ currentYear }}</div>
       </div>
     </q-drawer>
 
-    <q-page-container class="page-container">
-      <router-view />
-    </q-page-container>
+    <q-page-container class="page-container"><router-view /></q-page-container>
   </q-layout>
 </template>
 
@@ -277,13 +277,13 @@ import { useNotificationStore } from "@/stores/notifications";
 interface NavItem {
   name: string;
   label: string;
+  shortLabel?: string;
   icon: string;
   to: string;
 }
 
 interface NavGroup {
   label: string;
-  icon: string;
   items: NavItem[];
 }
 
@@ -291,68 +291,85 @@ const auth = useAuthStore();
 const notificationStore = useNotificationStore();
 const router = useRouter();
 const route = useRoute();
-
 const currentYear = new Date().getFullYear();
 const leftDrawerOpen = ref(false);
-const userInitials = computed(() => auth.user?.full_name?.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "CV");
+const globalSearch = ref("");
+const userInitials = computed(
+  () =>
+    auth.user?.full_name
+      ?.split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(part => part[0])
+      .join("")
+      .toUpperCase() || "CV"
+);
+const firstName = computed(
+  () => auth.user?.full_name?.trim().split(/\s+/)[0] || "Profile"
+);
 const notificationCaption = computed(() =>
   notificationStore.unseenCount > 0
     ? `${notificationStore.unseenCount} unseen notification${notificationStore.unseenCount === 1 ? "" : "s"}`
-    : "You’re all caught up"
+    : "You're all caught up"
 );
 let notificationPoll: ReturnType<typeof setInterval> | undefined;
 
-const navGroups: NavGroup[] = [
-  {
-    label: "Job Search",
-    icon: "work",
-    items: [
-      {
-        name: "opportunities",
-        label: "Opportunities",
-        icon: "work",
-        to: "/opportunities"
-      },
-      {
-        name: "applications",
-        label: "Applications",
-        icon: "assignment",
-        to: "/applications"
-      },
-      {
-        name: "email-follow-ups",
-        label: "Email Follow-ups",
-        icon: "mark_email_read",
-        to: "/email-follow-ups"
-      }
-    ]
-  },
-  {
-    label: "Documents",
-    icon: "folder_open",
-    items: [
-      {
-        name: "resumes",
-        label: "Resume",
-        icon: "description",
-        to: "/resumes"
-      },
-      {
-        name: "cover-letters",
-        label: "Cover Letters",
-        icon: "article",
-        to: "/cover-letters"
-      }
-    ]
-  }
-];
-
-const dashboardItems: NavItem[] = [
+const primaryNavItems: NavItem[] = [
   {
     name: "dashboard",
     label: "Dashboard",
-    icon: "dashboard",
+    shortLabel: "Home",
+    icon: "home",
     to: "/dashboard"
+  },
+  {
+    name: "opportunities",
+    label: "Opportunities",
+    shortLabel: "Jobs",
+    icon: "work",
+    to: "/opportunities"
+  },
+  {
+    name: "applications",
+    label: "Applications",
+    icon: "assignment",
+    to: "/applications"
+  },
+  { name: "resumes", label: "Resumes", icon: "description", to: "/resumes" }
+];
+
+const moreGroup: NavGroup = {
+  label: "More",
+  items: [
+    {
+      name: "email-follow-ups",
+      label: "Email follow-ups",
+      icon: "mark_email_read",
+      to: "/email-follow-ups"
+    },
+    {
+      name: "cover-letters",
+      label: "Cover letters",
+      icon: "article",
+      to: "/cover-letters"
+    },
+    { name: "settings", label: "Settings", icon: "settings", to: "/settings" }
+  ]
+};
+
+const mobileNavGroups: NavGroup[] = [
+  { label: "Career", items: primaryNavItems },
+  { label: "Tools", items: moreGroup.items },
+  {
+    label: "Account",
+    items: [
+      {
+        name: "notifications",
+        label: "Notifications",
+        icon: "notifications_none",
+        to: "/notifications"
+      }
+    ]
   }
 ];
 
@@ -369,17 +386,22 @@ function toggleLeftDrawer() {
 }
 
 function goDashboard() {
-  if (!isActive("dashboard")) {
-    void router.push({ name: "dashboard" });
-  }
+  if (!isActive("dashboard")) void router.push({ name: "dashboard" });
+}
+
+function submitSearch() {
+  const search = globalSearch.value.trim();
+  if (search) void router.push({ name: "opportunities", query: { search } });
+  else void router.push({ name: "opportunities" });
 }
 
 onMounted(() => {
   void auth.loadUser();
   void notificationStore.refreshUnseenCount();
-  notificationPoll = setInterval(() => {
-    void notificationStore.refreshUnseenCount();
-  }, 30_000);
+  notificationPoll = setInterval(
+    () => void notificationStore.refreshUnseenCount(),
+    30_000
+  );
 });
 
 onBeforeUnmount(() => {
@@ -395,324 +417,354 @@ function onLogout() {
 
 <style lang="scss" scoped>
 .app-header {
-  background: #023047;
-}
-
-@media (min-width: 1024px) {
-  .header-hamburger {
-    display: none !important;
-  }
-}
-
-@media (max-width: 1023px) {
-  .header-nav {
-    display: none !important;
-  }
+  color: #263547;
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid #e2e7ec;
+  box-shadow: 0 1px 3px rgba(17, 31, 48, 0.05);
 }
 
 .app-toolbar {
-  min-height: 60px;
-  gap: 4px;
+  width: min(100%, 1220px);
+  min-height: 66px;
+  margin: 0 auto;
+  padding: 0 18px;
+  gap: 12px;
+}
+
+.header-hamburger {
+  display: none;
+  color: #334155;
 }
 
 .toolbar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.2px;
+  gap: 9px;
+  padding: 4px;
+  color: #14213d;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.45px;
   cursor: pointer;
   user-select: none;
-  padding: 4px 8px;
-  border-radius: 10px;
-
-  &:hover {
-    background: rgba(142, 202, 230, 0.1);
-  }
 }
 
 .toolbar-brand-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   color: #fff;
-  background: linear-gradient(135deg, #219ebc 0%, #8ecae6 100%);
-  box-shadow: 0 4px 12px rgba(33, 158, 188, 0.4);
+  background: #1769e0;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  box-shadow: 0 5px 14px rgba(23, 105, 224, 0.2);
 }
 
 .brand-accent {
-  color: #ffb703;
+  color: #1769e0;
+}
+
+.vault-search {
+  width: clamp(210px, 23vw, 320px);
+  margin-left: 8px;
+}
+
+.vault-search :deep(.q-field__control) {
+  height: 38px;
+  border-radius: 20px;
+  background: #f6f8fb;
+}
+
+.vault-search :deep(.q-field__native) {
+  font-size: 13px;
+}
+.vault-search :deep(.q-field__control::before) {
+  border-color: #d9e0e8;
 }
 
 .header-nav {
   display: flex;
-  align-items: center;
+  align-self: stretch;
+  align-items: stretch;
   gap: 2px;
-  margin-left: 16px;
 }
 
 .nav-trigger {
-  color: #cfe3ec;
+  min-width: 68px;
+  padding: 4px 9px 2px;
+  border-radius: 0;
+  color: #687386;
+  font-size: 11px;
   font-weight: 500;
-  border-radius: 8px;
-  padding: 0 10px;
-
-  &:hover {
-    background: rgba(142, 202, 230, 0.14);
-    color: #fff;
-  }
 }
 
+.nav-trigger :deep(.q-btn__content),
+.nav-trigger-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex-wrap: nowrap;
+  line-height: 1.1;
+}
+.nav-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  line-height: 22px;
+}
+
+.nav-trigger::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: -1px;
+  left: 8px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+}
+
+.nav-trigger:hover {
+  color: #172033;
+  background: #f8fafc;
+}
 .nav-trigger--active {
-  color: #fff;
-  background: rgba(33, 158, 188, 0.28);
-
-  :deep(.q-icon) {
-    color: #8ecae6;
-  }
+  color: #1769e0;
+}
+.nav-trigger--active::after {
+  background: #1769e0;
+}
+.nav-more :deep(.q-btn-dropdown__arrow) {
+  display: none;
 }
 
-.nav-dropdown :deep(.q-btn-dropdown__arrow) {
-  color: inherit;
-}
-
-.nav-menu {
+:global(.nav-menu) {
+  min-width: 230px;
+  padding: 5px;
+  border: 1px solid #e1e7ee;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 30px rgba(2, 48, 71, 0.18);
+  background: #fff;
+  box-shadow: 0 16px 38px rgba(30, 45, 65, 0.14);
 }
 
 .nav-item {
+  min-height: 48px;
+  margin: 2px 0;
   border-radius: 8px;
-  margin: 2px 8px;
-  font-weight: 500;
-  color: #334e5a;
-
-  &:hover {
-    background: rgba(33, 158, 188, 0.08);
-  }
-
-  .q-icon {
-    color: #6b8a99;
-  }
+  color: #334155;
+  font-weight: 550;
 }
 
+.nav-item:hover,
 .nav-item--active {
-  background: rgba(33, 158, 188, 0.14);
-  color: #0b7285;
+  color: #1769e0;
+  background: #eef5ff;
+}
+.nav-item :deep(.q-icon) {
+  color: #728095;
+}
+.nav-item--active :deep(.q-icon) {
+  color: #1769e0;
+}
 
-  .q-icon {
-    color: #219ebc;
-  }
+.notification-button {
+  color: #5f6b7b;
+}
+.notification-button:hover {
+  color: #1769e0;
+  background: #f0f5fb;
 }
 
 .user-menu {
-  border-radius: 12px;
-  margin-left: 8px;
+  margin-left: -5px;
+  border-radius: 24px;
 }
-
 .user-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 4px 6px 4px 4px;
-  border-radius: 12px;
-  background: rgba(142, 202, 230, 0.14);
-  border: 1px solid rgba(142, 202, 230, 0.18);
-
-  &:hover {
-    background: rgba(142, 202, 230, 0.22);
-  }
+  gap: 8px;
 }
-
-.user-avatar-wrap {
-  position: relative;
-  display: flex;
-}
-
-.profile-notification-badge {
-  position: absolute;
-  top: -7px;
-  left: -8px;
-  z-index: 2;
-  min-width: 17px;
-  min-height: 17px;
-  padding: 2px 4px;
-  border: 2px solid #174f65;
-  font-size: 9px;
+.profile-avatar {
+  color: #fff;
+  background: linear-gradient(135deg, #1769e0, #635bdf);
+  font-size: 13px;
   font-weight: 800;
 }
-
-.user-chip-text {
-  text-align: left;
-}
-
 .user-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  line-height: 1.25;
+  color: #253247;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
 }
-
-.user-email {
-  font-size: 11px;
-  color: #8ecae6;
-  line-height: 1.25;
-}
-
-.user-caret {
-  color: #8ecae6;
+.user-account {
+  color: #8a95a5;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 :global(.user-menu-card) {
   min-width: 292px;
-  padding: 8px;
-  border: 1px solid rgba(16, 42, 67, 0.08);
-  background: #fff;
 }
-
 .user-menu-header {
   padding: 12px 10px;
-  background: linear-gradient(135deg, #f1f8fb 0%, #f8fbfc 100%);
-  border-radius: 10px;
-}
-
-.profile-avatar {
-  color: #fff;
-  background: linear-gradient(135deg, #1f6f8b 0%, #219ebc 100%);
-  font-size: 14px;
-  font-weight: 800;
-  box-shadow: 0 4px 10px rgba(31, 111, 139, 0.22);
-}
-
-.user-menu-name {
-  font-weight: 600;
-  color: #023047;
-}
-
-.user-menu-email {
-  color: #6b8a99;
-}
-
-.user-menu-account {
-  margin-top: 3px;
-  color: #8a9eaa;
-  font-size: 10px;
-}
-
-.profile-menu-item {
-  min-height: 56px;
-  margin: 4px 0;
   border-radius: 9px;
-  color: #243b53;
-
-  &:hover {
-    background: #f1f8fb;
-  }
-
-  :deep(.q-item__label--caption) {
-    margin-top: 2px;
-    color: #829ab1;
-    font-size: 11px;
-  }
-
-  :deep(.q-icon) {
-    color: #1f6f8b;
-  }
+  background: #f7f9fc;
 }
-
+.user-menu-name {
+  color: #172033;
+  font-weight: 700;
+}
+.user-menu-email {
+  color: #748094;
+}
+.profile-menu-item {
+  min-height: 52px;
+  margin: 2px 0;
+  border-radius: 8px;
+  color: #334155;
+}
+.profile-menu-item:hover {
+  background: #f5f8fc;
+}
+.profile-menu-item :deep(.q-icon) {
+  color: #64748b;
+}
+.profile-menu-item :deep(.q-item__label--caption) {
+  margin-top: 2px;
+  color: #8a95a5;
+  font-size: 11px;
+}
 .profile-menu-item--danger {
-  color: #b42318;
-
-  &:hover {
-    background: #fff4f2;
-  }
-
-  :deep(.q-icon) {
-    color: #d64545;
-  }
+  color: #ba2f39;
+}
+.profile-menu-item--danger :deep(.q-icon) {
+  color: #ba2f39;
+}
+.profile-menu-item--danger:hover {
+  background: #fff3f4;
 }
 
 .drawer-content {
-  height: 100%;
-  background: #023047;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  height: 100%;
+  background: #fff;
 }
-
 .drawer-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 18px 20px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  border-bottom: 1px solid rgba(142, 202, 230, 0.12);
+  gap: 9px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e6eaf0;
+  color: #14213d;
+  font-size: 18px;
+  font-weight: 800;
 }
-
-.drawer-brand-mark {
+.drawer-profile {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  color: #fff;
-  background: linear-gradient(135deg, #219ebc 0%, #8ecae6 100%);
+  gap: 12px;
+  margin: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f4f7fb;
 }
-
+.drawer-profile-name {
+  color: #1f2b3d;
+  font-size: 13px;
+  font-weight: 700;
+}
+.drawer-profile-email {
+  max-width: 165px;
+  overflow: hidden;
+  color: #7b8797;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .drawer-scroll {
   flex: 1;
   min-height: 0;
 }
-
 .drawer-section-label {
-  color: #6f93a3;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  padding-top: 16px;
+  color: #9aa4b2;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
   text-transform: uppercase;
 }
-
 .menu-item {
-  color: #b9d5df;
-  border-radius: 10px;
+  min-height: 50px;
   margin: 2px 10px;
-  font-weight: 500;
-
-  &:hover {
-    background: rgba(142, 202, 230, 0.12);
-  }
+  border-radius: 9px;
+  color: #536174;
+  font-weight: 550;
 }
-
+.menu-item:hover {
+  background: #f5f8fc;
+}
 .menu-item--active {
-  background: rgba(33, 158, 188, 0.3);
-  color: #fff;
-
-  .q-icon {
-    color: #8ecae6;
-  }
+  color: #1769e0;
+  background: #edf4ff;
 }
-
+.menu-item--active :deep(.q-icon) {
+  color: #1769e0;
+}
 .drawer-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   padding: 14px;
-  font-size: 12px;
-  color: #6f93a3;
-  border-top: 1px solid rgba(142, 202, 230, 0.12);
+  border-top: 1px solid #e6eaf0;
+  color: #9aa4b2;
+  font-size: 11px;
+  text-align: center;
 }
 
 .page-container {
-  background: #f8fafc;
+  background: #f3f5f7;
+}
+
+@media (max-width: 1120px) {
+  .vault-search {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .app-toolbar {
+    min-height: 58px;
+    padding: 0 12px;
+  }
+  .header-hamburger {
+    display: inline-flex;
+  }
+  .header-nav,
+  .notification-button {
+    display: none;
+  }
+  .toolbar-brand {
+    font-size: 17px;
+  }
+  .toolbar-brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-chip-text {
+    display: none;
+  }
+  .app-toolbar {
+    gap: 5px;
+  }
 }
 </style>
