@@ -14,3 +14,8 @@ export interface TokenWithUser {
   token_type: string;
   user: User;
 }
+
+export interface PasswordPolicy {
+  minimum_length: number;
+  maximum_length: number;
+}

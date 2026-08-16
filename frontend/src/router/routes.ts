@@ -38,6 +38,12 @@ const routes: RouteRecordRaw[] = [
         path: "settings",
         name: "system-admin-settings",
         component: () => import("@/modules/SystemAdmin/AdminSettingsPage.vue")
+      },
+      {
+        path: "exception-logs",
+        name: "system-admin-exception-logs",
+        component: () =>
+          import("@/modules/SystemAdmin/AdminExceptionLogsPage.vue")
       }
     ]
   },

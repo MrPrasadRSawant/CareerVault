@@ -142,3 +142,54 @@ export interface LoginSecuritySettings {
   lockout_duration_minutes: number;
   updated_at: string;
 }
+
+export interface PasswordPolicySettings {
+  minimum_length: number;
+  maximum_length: number;
+  updated_at: string;
+}
+
+export interface AdminExceptionOverview {
+  exceptions_last_24_hours: number;
+  exceptions_last_7_days: number;
+  unique_fingerprints_last_24_hours: number;
+  retention_days: number;
+}
+
+export interface AdminExceptionLog {
+  id: string;
+  request_id: string;
+  user_id: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  occurred_at: string;
+  method: string;
+  route_template: string;
+  query_parameter_names: string[];
+  status_code: number;
+  exception_type: string;
+  message: string;
+  fingerprint: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  app_environment: string;
+  is_handled: boolean;
+}
+
+export interface AdminExceptionLogDetail extends AdminExceptionLog {
+  traceback: string;
+}
+
+export interface AdminExceptionLogPage {
+  items: AdminExceptionLog[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminExceptionLogQuery {
+  search?: string;
+  status_code?: number;
+  limit?: number;
+  offset?: number;
+}

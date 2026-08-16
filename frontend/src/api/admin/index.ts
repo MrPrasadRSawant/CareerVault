@@ -4,6 +4,11 @@ import type {
   AdminAuthSession,
   AdminAuthSessionPage,
   AdminAuthSessionQuery,
+  AdminExceptionLog,
+  AdminExceptionLogDetail,
+  AdminExceptionLogPage,
+  AdminExceptionLogQuery,
+  AdminExceptionOverview,
   AdminLoginEvent,
   AdminLoginEventPage,
   AdminLoginEventQuery,
@@ -17,6 +22,7 @@ import type {
   AuthOutcome,
   AuthSessionStatus,
   LoginSecuritySettings,
+  PasswordPolicySettings,
   RegistrationSettings
 } from "./types";
 
@@ -29,6 +35,11 @@ export type {
   AdminAuthSession,
   AdminAuthSessionPage,
   AdminAuthSessionQuery,
+  AdminExceptionLog,
+  AdminExceptionLogDetail,
+  AdminExceptionLogPage,
+  AdminExceptionLogQuery,
+  AdminExceptionOverview,
   AdminRegistrationPeriod,
   AdminUser,
   AdminUserPage,
@@ -37,6 +48,7 @@ export type {
   AuthOutcome,
   AuthSessionStatus,
   LoginSecuritySettings,
+  PasswordPolicySettings,
   RegistrationSettings
 };
 
@@ -65,6 +77,18 @@ export const adminApi = {
       .then(r => r.data);
   },
 
+  exceptionOverview(): Promise<AdminExceptionOverview> {
+    return api.get("/admin/exceptions/overview").then(r => r.data);
+  },
+
+  exceptionLogs(query: AdminExceptionLogQuery): Promise<AdminExceptionLogPage> {
+    return api.get("/admin/exceptions", { params: query }).then(r => r.data);
+  },
+
+  exceptionLog(exceptionId: string): Promise<AdminExceptionLogDetail> {
+    return api.get(`/admin/exceptions/${exceptionId}`).then(r => r.data);
+  },
+
   registrationSettings(): Promise<RegistrationSettings> {
     return api.get("/admin/settings/registration").then(r => r.data);
   },
@@ -91,6 +115,22 @@ export const adminApi = {
       .patch("/admin/settings/login-security", {
         failed_login_attempt_limit: failedLoginAttemptLimit,
         lockout_duration_minutes: lockoutDurationMinutes
+      })
+      .then(r => r.data);
+  },
+
+  passwordPolicySettings(): Promise<PasswordPolicySettings> {
+    return api.get("/admin/settings/password-policy").then(r => r.data);
+  },
+
+  updatePasswordPolicySettings(
+    minimumLength: number,
+    maximumLength: number
+  ): Promise<PasswordPolicySettings> {
+    return api
+      .patch("/admin/settings/password-policy", {
+        minimum_length: minimumLength,
+        maximum_length: maximumLength
       })
       .then(r => r.data);
   },

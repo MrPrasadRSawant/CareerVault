@@ -7,6 +7,7 @@ from app.core.database import SessionLocal
 from app.core.security import hash_password
 from app.models.enums import UserRole
 from app.repositories.user_repository import UserRepository
+from app.repositories.system_setting_repository import SystemSettingRepository
 
 
 def parse_args() -> argparse.Namespace:
@@ -34,10 +35,15 @@ def main() -> None:
     password = os.getenv("SYSTEM_ADMIN_PASSWORD") or getpass.getpass(
         "System administrator password: "
     )
-    if len(password) < 12:
-        raise SystemExit("The administrator password must contain at least 12 characters.")
-
     with SessionLocal() as db:
+        minimum, maximum = SystemSettingRepository(
+            db
+        ).get_password_length_policy()
+        if not minimum <= len(password) <= maximum:
+            raise SystemExit(
+                f"The administrator password must contain between {minimum} "
+                f"and {maximum} characters."
+            )
         repository = UserRepository(db)
         existing = repository.get_by_email(args.email)
         if existing is not None:

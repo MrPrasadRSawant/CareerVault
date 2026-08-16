@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     AUTH_AUDIT_RETENTION_DAYS: int = 90
     AUTH_SESSION_ACTIVITY_UPDATE_SECONDS: int = 60
+    EXCEPTION_LOG_RETENTION_DAYS: int = 90
     ALGORITHM: str = "HS256"
 
     DATABASE_URL: str = "sqlite:///./careervault.db"

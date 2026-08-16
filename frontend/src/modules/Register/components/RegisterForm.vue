@@ -33,8 +33,9 @@
       label="Password"
       outlined
       class="form-input"
-      hint="At least 8 characters"
-      :rules="[isRequired, minLength]"
+      :hint="`${passwordMinimumLength}–${passwordMaximumLength} characters`"
+      :maxlength="passwordMaximumLength"
+      :rules="[isRequired, passwordLength]"
       autocomplete="new-password"
     >
       <template #prepend>
@@ -59,6 +60,7 @@
       outlined
       class="form-input"
       :rules="[isRequired, passwordMatches]"
+      :maxlength="passwordMaximumLength"
       autocomplete="new-password"
     >
       <template #prepend>
@@ -117,7 +119,9 @@ const {
   canSubmit,
   isRequired,
   isEmail,
-  minLength,
+  passwordLength,
+  passwordMinimumLength,
+  passwordMaximumLength,
   passwordMatches,
   onSubmit,
   onReset

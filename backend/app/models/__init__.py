@@ -6,6 +6,7 @@ from app.models.base import Base
 from app.models.cover_letter import CoverLetter
 from app.models.daily_registration_counter import DailyRegistrationCounter
 from app.models.email_follow_up import EmailFollowUp
+from app.models.exception_log import ExceptionLog
 from app.models.enums import (
     ApplicationStatus,
     AuthEventType,
@@ -43,6 +44,7 @@ __all__ = [
     "CoverLetter",
     "DailyRegistrationCounter",
     "EmailFollowUp",
+    "ExceptionLog",
     "EmailFollowUpOutcome",
     "FollowUp",
     "FollowUpStatus",

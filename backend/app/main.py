@@ -1,9 +1,15 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.router import api_router
 from app.core.config import settings
+from app.core.database import SessionLocal
+from app.core.exception_logging import (
+    record_unexpected_exception,
+    request_id_for,
+)
 
 API_V1_PREFIX = "/api/v1"
 
@@ -16,6 +22,49 @@ app = FastAPI(
     redoc_url=f"{API_V1_PREFIX}/redoc" if settings.ENABLE_API_DOCS else None,
     openapi_url=f"{API_V1_PREFIX}/openapi.json" if settings.ENABLE_API_DOCS else None,
 )
+app.state.exception_log_session_factory = SessionLocal
+
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    request_id = request_id_for(request)
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
+    request_id = request_id_for(request)
+    if exc.status_code >= 500:
+        request_id = record_unexpected_exception(
+            request,
+            exc,
+            status_code=exc.status_code,
+            is_handled=True,
+        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers={**(exc.headers or {}), "X-Request-ID": request_id},
+    )
+
+
+@app.exception_handler(Exception)
+async def unexpected_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    request_id = record_unexpected_exception(request, exc)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "An unexpected server error occurred",
+            "request_id": request_id,
+        },
+        headers={"X-Request-ID": request_id},
+    )
 
 app.add_middleware(
     CORSMiddleware,

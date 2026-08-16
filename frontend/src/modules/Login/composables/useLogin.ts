@@ -1,7 +1,8 @@
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { axios } from "@/api/client";
+import { authApi } from "@/api/auth";
 import { useAuthStore } from "@/stores/auth";
 
 export function useLogin() {
@@ -13,11 +14,14 @@ export function useLogin() {
   const email = ref("");
   const password = ref("");
   const submitting = ref(false);
+  const passwordMinimumLength = ref(8);
+  const passwordMaximumLength = ref(20);
 
   const canSubmit = computed(
     () =>
       email.value.trim().length > 0 &&
-      password.value.trim().length > 0 &&
+      password.value.length >= passwordMinimumLength.value &&
+      password.value.length <= passwordMaximumLength.value &&
       !submitting.value
   );
 
@@ -28,6 +32,15 @@ export function useLogin() {
   function isEmail(value: string | null) {
     return (
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value ?? "") || "Enter a valid email"
+    );
+  }
+
+  function passwordLength(value: string | null) {
+    const length = (value ?? "").length;
+    return (
+      (length >= passwordMinimumLength.value &&
+        length <= passwordMaximumLength.value) ||
+      `Password must contain ${passwordMinimumLength.value}–${passwordMaximumLength.value} characters`
     );
   }
 
@@ -70,6 +83,16 @@ export function useLogin() {
     password.value = "";
   }
 
+  onMounted(async () => {
+    try {
+      const policy = await authApi.passwordPolicy();
+      passwordMinimumLength.value = policy.minimum_length;
+      passwordMaximumLength.value = policy.maximum_length;
+    } catch {
+      // Keep the secure database defaults when the policy request is unavailable.
+    }
+  });
+
   return {
     email,
     password,
@@ -77,6 +100,9 @@ export function useLogin() {
     canSubmit,
     isRequired,
     isEmail,
+    passwordLength,
+    passwordMinimumLength,
+    passwordMaximumLength,
     onSubmit,
     onReset
   };

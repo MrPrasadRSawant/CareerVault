@@ -52,3 +52,4 @@ class User(UuidPk, Base, TimestampMixin):
         "AuthSession", back_populates="user", cascade="all, delete-orphan"
     )
     login_audit_logs = relationship("LoginAuditLog", back_populates="user")
+    exception_logs = relationship("ExceptionLog", back_populates="user")

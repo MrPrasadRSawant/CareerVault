@@ -142,6 +142,61 @@
           </span>
         </div>
       </section>
+
+      <section v-if="passwordPolicy" class="setting-card">
+        <div class="setting-copy">
+          <div class="setting-icon password-icon">
+            <q-icon name="password" />
+          </div>
+          <div>
+            <h2>Password length</h2>
+            <p>
+              Set the accepted password character range for registration and
+              login. Both values must remain within 8–20 characters.
+            </p>
+          </div>
+        </div>
+
+        <q-form class="setting-form security-form" @submit="savePasswordPolicy">
+          <q-input
+            v-model.number="passwordMinimumLength"
+            type="number"
+            outlined
+            label="Minimum characters"
+            hint="Allowed range: 8 to 20"
+            :min="8"
+            :max="20"
+            :rules="[validatePasswordMinimum]"
+          />
+          <q-input
+            v-model.number="passwordMaximumLength"
+            type="number"
+            outlined
+            label="Maximum characters"
+            hint="Allowed range: 8 to 20"
+            :min="8"
+            :max="20"
+            :rules="[validatePasswordMaximum]"
+          />
+          <q-btn
+            type="submit"
+            color="primary"
+            unelevated
+            no-caps
+            label="Save password policy"
+            :loading="savingPasswordPolicy"
+            :disable="!hasPasswordPolicyChanges"
+          />
+        </q-form>
+
+        <div class="notice">
+          <q-icon name="info_outline" />
+          <span>
+            Changes apply immediately. Ensure existing users' passwords remain
+            inside the selected range so they can continue signing in.
+          </span>
+        </div>
+      </section>
     </template>
 
     <div v-else class="error-state">
@@ -158,6 +213,7 @@ import { useQuasar } from "quasar";
 import {
   adminApi,
   type LoginSecuritySettings,
+  type PasswordPolicySettings,
   type RegistrationSettings
 } from "@/api/admin";
 
@@ -166,12 +222,16 @@ defineOptions({ name: "AdminSettingsPage" });
 const $q = useQuasar();
 const settings = ref<RegistrationSettings | null>(null);
 const securitySettings = ref<LoginSecuritySettings | null>(null);
+const passwordPolicy = ref<PasswordPolicySettings | null>(null);
 const dailyLimit = ref<number | null>(null);
 const failedAttemptLimit = ref<number | null>(null);
 const lockoutDurationMinutes = ref<number | null>(null);
+const passwordMinimumLength = ref<number | null>(null);
+const passwordMaximumLength = ref<number | null>(null);
 const loading = ref(true);
 const saving = ref(false);
 const savingSecurity = ref(false);
+const savingPasswordPolicy = ref(false);
 
 const hasChanges = computed(
   () =>
@@ -185,6 +245,13 @@ const hasSecurityChanges = computed(
       securitySettings.value?.failed_login_attempt_limit ||
       lockoutDurationMinutes.value !==
         securitySettings.value?.lockout_duration_minutes)
+);
+const hasPasswordPolicyChanges = computed(
+  () =>
+    passwordMinimumLength.value !== null &&
+    passwordMaximumLength.value !== null &&
+    (passwordMinimumLength.value !== passwordPolicy.value?.minimum_length ||
+      passwordMaximumLength.value !== passwordPolicy.value?.maximum_length)
 );
 
 function validateLimit(value: number | null) {
@@ -217,21 +284,50 @@ function validateLockoutDuration(value: number | null) {
   );
 }
 
+function validatePasswordMinimum(value: number | null) {
+  return (
+    (value !== null &&
+      Number.isInteger(value) &&
+      value >= 8 &&
+      value <= 20 &&
+      (passwordMaximumLength.value === null ||
+        value <= passwordMaximumLength.value)) ||
+    "Minimum must be 8–20 and not exceed maximum"
+  );
+}
+
+function validatePasswordMaximum(value: number | null) {
+  return (
+    (value !== null &&
+      Number.isInteger(value) &&
+      value >= 8 &&
+      value <= 20 &&
+      (passwordMinimumLength.value === null ||
+        value >= passwordMinimumLength.value)) ||
+    "Maximum must be 8–20 and not be below minimum"
+  );
+}
+
 async function load() {
   loading.value = true;
   try {
-    [settings.value, securitySettings.value] = await Promise.all([
+    [settings.value, securitySettings.value, passwordPolicy.value] =
+      await Promise.all([
       adminApi.registrationSettings(),
-      adminApi.loginSecuritySettings()
+      adminApi.loginSecuritySettings(),
+      adminApi.passwordPolicySettings()
     ]);
     dailyLimit.value = settings.value.daily_registration_limit;
     failedAttemptLimit.value =
       securitySettings.value.failed_login_attempt_limit;
     lockoutDurationMinutes.value =
       securitySettings.value.lockout_duration_minutes;
+    passwordMinimumLength.value = passwordPolicy.value.minimum_length;
+    passwordMaximumLength.value = passwordPolicy.value.maximum_length;
   } catch {
     settings.value = null;
     securitySettings.value = null;
+    passwordPolicy.value = null;
   } finally {
     loading.value = false;
   }
@@ -264,6 +360,34 @@ async function saveSecurity() {
     });
   } finally {
     savingSecurity.value = false;
+  }
+}
+
+async function savePasswordPolicy() {
+  if (
+    passwordMinimumLength.value === null ||
+    passwordMaximumLength.value === null ||
+    validatePasswordMinimum(passwordMinimumLength.value) !== true ||
+    validatePasswordMaximum(passwordMaximumLength.value) !== true
+  ) {
+    return;
+  }
+  savingPasswordPolicy.value = true;
+  try {
+    passwordPolicy.value = await adminApi.updatePasswordPolicySettings(
+      passwordMinimumLength.value,
+      passwordMaximumLength.value
+    );
+    passwordMinimumLength.value = passwordPolicy.value.minimum_length;
+    passwordMaximumLength.value = passwordPolicy.value.maximum_length;
+    $q.notify({ type: "positive", message: "Password policy updated" });
+  } catch {
+    $q.notify({
+      type: "negative",
+      message: "Could not update the password policy"
+    });
+  } finally {
+    savingPasswordPolicy.value = false;
   }
 }
 
@@ -391,6 +515,10 @@ h1 {
 .security-icon {
   color: #8b5e00;
   background: #fff4d6;
+}
+.password-icon {
+  color: #7657c9;
+  background: #f1edff;
 }
 h2 {
   margin: 0 0 5px;

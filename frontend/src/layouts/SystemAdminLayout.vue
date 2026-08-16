@@ -158,6 +158,12 @@ const navItems = [
     label: "Platform settings",
     icon: "tune",
     to: "/system-admin/settings"
+  },
+  {
+    name: "system-admin-exception-logs",
+    label: "Exception logs",
+    icon: "bug_report",
+    to: "/system-admin/exception-logs"
   }
 ];
 

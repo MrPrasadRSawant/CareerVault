@@ -1,8 +1,9 @@
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useAuthStore } from "@/stores/auth";
 import { axios } from "@/api/client";
+import { authApi } from "@/api/auth";
 
 export function useRegister() {
   const auth = useAuthStore();
@@ -14,12 +15,15 @@ export function useRegister() {
   const password = ref("");
   const confirmPassword = ref("");
   const submitting = ref(false);
+  const passwordMinimumLength = ref(8);
+  const passwordMaximumLength = ref(20);
 
   const canSubmit = computed(
     () =>
       fullName.value.trim().length > 0 &&
       email.value.trim().length > 0 &&
-      password.value.length >= 8 &&
+      password.value.length >= passwordMinimumLength.value &&
+      password.value.length <= passwordMaximumLength.value &&
       confirmPassword.value.length > 0 &&
       password.value === confirmPassword.value &&
       !submitting.value
@@ -35,9 +39,12 @@ export function useRegister() {
     );
   }
 
-  function minLength(value: string | null) {
+  function passwordLength(value: string | null) {
+    const length = (value ?? "").length;
     return (
-      (value ?? "").length >= 8 || "Password must be at least 8 characters"
+      (length >= passwordMinimumLength.value &&
+        length <= passwordMaximumLength.value) ||
+      `Password must contain ${passwordMinimumLength.value}–${passwordMaximumLength.value} characters`
     );
   }
 
@@ -77,6 +84,16 @@ export function useRegister() {
     confirmPassword.value = "";
   }
 
+  onMounted(async () => {
+    try {
+      const policy = await authApi.passwordPolicy();
+      passwordMinimumLength.value = policy.minimum_length;
+      passwordMaximumLength.value = policy.maximum_length;
+    } catch {
+      // Keep the secure database defaults when the policy request is unavailable.
+    }
+  });
+
   return {
     fullName,
     email,
@@ -86,7 +103,9 @@ export function useRegister() {
     canSubmit,
     isRequired,
     isEmail,
-    minLength,
+    passwordLength,
+    passwordMinimumLength,
+    passwordMaximumLength,
     passwordMatches,
     onSubmit,
     onReset

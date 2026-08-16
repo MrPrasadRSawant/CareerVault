@@ -36,8 +36,13 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+    original_exception_session_factory = (
+        app.state.exception_log_session_factory
+    )
+    app.state.exception_log_session_factory = TestingSessionLocal
     with TestClient(app) as test_client:
         yield test_client
+    app.state.exception_log_session_factory = original_exception_session_factory
     app.dependency_overrides.clear()
 
 

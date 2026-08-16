@@ -323,10 +323,35 @@ Admins can change both the attempt threshold and lockout duration from
 **Platform settings**. The values are stored as `failed_login_attempt_limit`
 and `login_lockout_duration_minutes` in `system_settings`.
 
+Password length is also database-configurable. The defaults accept 8–20
+characters, and System Admins can adjust the minimum and maximum from
+**Platform settings** while both remain inside the 8–20 boundary. The settings
+are stored as `password_min_length` and `password_max_length`. The same policy
+is enforced for registration, regular user login, and System Admin login.
+
 The recorded IP uses the ASGI client address. In a reverse-proxy deployment,
 configure the application server to trust forwarding headers only from your
 controlled proxy; the application does not trust arbitrary
 `X-Forwarded-For` values directly.
+
+### Exception diagnostics
+
+Unexpected server errors are appended to the `exception_logs` table and can be
+reviewed by System Admins from **Exception logs**. Each entry contains a unique
+request ID, timestamp, authenticated user reference when safely available,
+HTTP method, route template, status, exception type, sanitized message and
+stack trace, issue fingerprint, validated IP address, user agent, and runtime
+environment. The fingerprint groups recurring errors without replacing their
+individual occurrences.
+
+Request bodies, authorization tokens, cookies, and query-string values are not
+stored. Email addresses, token-shaped values, password/secret assignments, and
+database parameter blocks found in exception text are redacted. Expected client
+responses such as 401, 404, and 422 are not treated as application exceptions.
+Logs are retained for `EXCEPTION_LOG_RETENTION_DAYS` (90 days by default). If
+the database itself is unavailable, persistence cannot succeed and the handler
+falls back to the server's standard error logger while still returning a safe
+request ID to the client.
 
 Start the FastAPI server:
 

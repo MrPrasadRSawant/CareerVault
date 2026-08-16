@@ -12,9 +12,16 @@ from app.core.security import decode_access_token
 from app.models.enums import AuthEventType
 from app.models.user import User
 from app.schemas import LoginRequest, TokenWithUser, UserCreate, UserRead
+from app.schemas.system_setting import PasswordPolicyRead
 from app.services.auth_service import AuthService
+from app.services.system_setting_service import SystemSettingService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+@router.get("/password-policy", response_model=PasswordPolicyRead)
+def password_policy(db: Session = Depends(get_db)) -> PasswordPolicyRead:
+    return SystemSettingService(db).password_policy()
 
 
 @router.post("/register", response_model=TokenWithUser, status_code=201)

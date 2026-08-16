@@ -21,7 +21,9 @@
       label="Password"
       outlined
       class="form-input"
-      :rules="[isRequired]"
+      :rules="[isRequired, passwordLength]"
+      :maxlength="passwordMaximumLength"
+      :hint="`${passwordMinimumLength}–${passwordMaximumLength} characters`"
       autocomplete="current-password"
     >
       <template #prepend>
@@ -78,6 +80,9 @@ const {
   canSubmit,
   isRequired,
   isEmail,
+  passwordLength,
+  passwordMinimumLength,
+  passwordMaximumLength,
   onSubmit,
   onReset
 } = useLogin();

@@ -68,6 +68,15 @@ class AuthService:
         )
 
     def register(self, email: str, full_name: str, password: str) -> User:
+        minimum, maximum = self.settings_repo.get_password_length_policy()
+        if not minimum <= len(password) <= maximum:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=(
+                    f"Password must contain between {minimum} and {maximum} "
+                    "characters"
+                ),
+            )
         if self.user_repo.get_by_email(email) is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -123,7 +132,13 @@ class AuthService:
             )
             raise self._temporary_lock_response(user.locked_until)
 
-        if user is None or not verify_password(password, user.hashed_password):
+        minimum, maximum = self.settings_repo.get_password_length_policy()
+        password_length_allowed = minimum <= len(password) <= maximum
+        if (
+            user is None
+            or not password_length_allowed
+            or not verify_password(password, user.hashed_password)
+        ):
             newly_locked_until = None
             failure_reason = AuthFailureReason.INVALID_CREDENTIALS
             http_status = status.HTTP_401_UNAUTHORIZED

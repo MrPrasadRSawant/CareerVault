@@ -1,9 +1,13 @@
 import { api } from "@/api/client";
-import type { TokenWithUser, User, UserRole } from "./types";
+import type { PasswordPolicy, TokenWithUser, User, UserRole } from "./types";
 
-export type { TokenWithUser, User, UserRole };
+export type { PasswordPolicy, TokenWithUser, User, UserRole };
 
 export const authApi = {
+  passwordPolicy(): Promise<PasswordPolicy> {
+    return api.get("/auth/password-policy").then(r => r.data);
+  },
+
   register(
     email: string,
     full_name: string,

@@ -19,11 +19,19 @@ from app.schemas.admin_security import (
     AdminLoginEventPage,
     AdminSecurityOverviewRead,
 )
+from app.schemas.admin_exception import (
+    AdminExceptionLogDetail,
+    AdminExceptionLogPage,
+    AdminExceptionOverviewRead,
+)
+from app.services.admin_exception_service import AdminExceptionService
 from app.services.admin_security_service import AdminSecurityService
 from app.services.admin_service import AdminService
 from app.schemas.system_setting import (
     LoginSecuritySettingsRead,
     LoginSecuritySettingsUpdate,
+    PasswordPolicyAdminRead,
+    PasswordPolicyUpdate,
     RegistrationSettingsRead,
     RegistrationSettingsUpdate,
 )
@@ -98,6 +106,33 @@ def update_login_security_settings(
     )
 
 
+@router.get(
+    "/settings/password-policy",
+    response_model=PasswordPolicyAdminRead,
+)
+def password_policy_settings(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_system_admin),
+) -> PasswordPolicyAdminRead:
+    return SystemSettingService(db).password_policy_admin()
+
+
+@router.patch(
+    "/settings/password-policy",
+    response_model=PasswordPolicyAdminRead,
+)
+def update_password_policy_settings(
+    payload: PasswordPolicyUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_system_admin),
+) -> PasswordPolicyAdminRead:
+    return SystemSettingService(db).update_password_policy(
+        payload.minimum_length,
+        payload.maximum_length,
+        current_admin.id,
+    )
+
+
 @router.get("/security/overview", response_model=AdminSecurityOverviewRead)
 def security_overview(
     db: Session = Depends(get_db),
@@ -140,6 +175,44 @@ def auth_sessions(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get(
+    "/exceptions/overview", response_model=AdminExceptionOverviewRead
+)
+def exception_overview(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_system_admin),
+) -> AdminExceptionOverviewRead:
+    return AdminExceptionService(db).overview()
+
+
+@router.get("/exceptions", response_model=AdminExceptionLogPage)
+def exception_logs(
+    search: str | None = Query(default=None, max_length=255),
+    status_code: int | None = Query(default=None, ge=400, le=599),
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_system_admin),
+) -> AdminExceptionLogPage:
+    return AdminExceptionService(db).list_logs(
+        search=search,
+        status_code=status_code,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get(
+    "/exceptions/{exception_id}", response_model=AdminExceptionLogDetail
+)
+def exception_log_detail(
+    exception_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_system_admin),
+) -> AdminExceptionLogDetail:
+    return AdminExceptionService(db).detail(exception_id)
 
 
 @router.get("/users", response_model=AdminUserPage)

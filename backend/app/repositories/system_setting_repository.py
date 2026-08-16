@@ -26,6 +26,12 @@ FAILED_LOGIN_ATTEMPT_LIMIT_DESCRIPTION = (
     "Consecutive invalid-password attempts allowed before a 20-minute "
     "temporary account lock."
 )
+PASSWORD_MIN_LENGTH_KEY = "password_min_length"
+PASSWORD_MAX_LENGTH_KEY = "password_max_length"
+DEFAULT_PASSWORD_MIN_LENGTH = 8
+DEFAULT_PASSWORD_MAX_LENGTH = 20
+PASSWORD_MIN_LENGTH_DESCRIPTION = "Minimum accepted password character length."
+PASSWORD_MAX_LENGTH_DESCRIPTION = "Maximum accepted password character length."
 
 
 class SystemSettingRepository:
@@ -78,6 +84,35 @@ class SystemSettingRepository:
             return max(1, int(setting.value))
         except ValueError:
             return DEFAULT_LOGIN_LOCKOUT_DURATION_MINUTES
+
+    def get_password_length_policy(self) -> tuple[int, int]:
+        minimum_setting = self.db.get(SystemSetting, PASSWORD_MIN_LENGTH_KEY)
+        if minimum_setting is None:
+            minimum_setting = SystemSetting(
+                key=PASSWORD_MIN_LENGTH_KEY,
+                value=str(DEFAULT_PASSWORD_MIN_LENGTH),
+                description=PASSWORD_MIN_LENGTH_DESCRIPTION,
+            )
+            self.db.add(minimum_setting)
+
+        maximum_setting = self.db.get(SystemSetting, PASSWORD_MAX_LENGTH_KEY)
+        if maximum_setting is None:
+            maximum_setting = SystemSetting(
+                key=PASSWORD_MAX_LENGTH_KEY,
+                value=str(DEFAULT_PASSWORD_MAX_LENGTH),
+                description=PASSWORD_MAX_LENGTH_DESCRIPTION,
+            )
+            self.db.add(maximum_setting)
+        self.db.flush()
+
+        try:
+            minimum = int(minimum_setting.value)
+            maximum = int(maximum_setting.value)
+        except ValueError:
+            return DEFAULT_PASSWORD_MIN_LENGTH, DEFAULT_PASSWORD_MAX_LENGTH
+        if not 8 <= minimum <= maximum <= 20:
+            return DEFAULT_PASSWORD_MIN_LENGTH, DEFAULT_PASSWORD_MAX_LENGTH
+        return minimum, maximum
 
     def set_daily_registration_limit(
         self, limit: int, updated_by: uuid.UUID
@@ -170,6 +205,34 @@ class SystemSettingRepository:
             self.db.add(duration_setting)
         duration_setting.value = str(lockout_duration_minutes)
         duration_setting.updated_by = updated_by
+        self.db.commit()
+
+    def set_password_length_policy(
+        self,
+        *,
+        minimum: int,
+        maximum: int,
+        updated_by: uuid.UUID,
+    ) -> None:
+        minimum_setting = self.db.get(SystemSetting, PASSWORD_MIN_LENGTH_KEY)
+        if minimum_setting is None:
+            minimum_setting = SystemSetting(
+                key=PASSWORD_MIN_LENGTH_KEY,
+                description=PASSWORD_MIN_LENGTH_DESCRIPTION,
+            )
+            self.db.add(minimum_setting)
+        minimum_setting.value = str(minimum)
+        minimum_setting.updated_by = updated_by
+
+        maximum_setting = self.db.get(SystemSetting, PASSWORD_MAX_LENGTH_KEY)
+        if maximum_setting is None:
+            maximum_setting = SystemSetting(
+                key=PASSWORD_MAX_LENGTH_KEY,
+                description=PASSWORD_MAX_LENGTH_DESCRIPTION,
+            )
+            self.db.add(maximum_setting)
+        maximum_setting.value = str(maximum)
+        maximum_setting.updated_by = updated_by
         self.db.commit()
 
     def consume_daily_registration_slot(

@@ -6,7 +6,7 @@ from app.schemas.user import UserRead
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=1, max_length=128)
+    password: str = Field(min_length=1, max_length=1024)
 
 
 class Token(ORMModel):
