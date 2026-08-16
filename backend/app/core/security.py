@@ -18,12 +18,16 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(
-    subject: str | int | uuid.UUID, expires_delta: timedelta | None = None
+    subject: str | int | uuid.UUID,
+    expires_delta: timedelta | None = None,
+    additional_claims: dict | None = None,
 ) -> str:
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     payload = {"sub": str(subject), "exp": expire}
+    if additional_claims:
+        payload.update(additional_claims)
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 

@@ -4,7 +4,6 @@
       v-model="fullName"
       label="Full name"
       outlined
-      rounded
       class="form-input"
       :rules="[isRequired]"
       autocomplete="name"
@@ -19,7 +18,6 @@
       type="email"
       label="Email address"
       outlined
-      rounded
       class="form-input"
       :rules="[isRequired, isEmail]"
       autocomplete="email"
@@ -34,7 +32,6 @@
       :type="showPassword ? 'text' : 'password'"
       label="Password"
       outlined
-      rounded
       class="form-input"
       hint="At least 8 characters"
       :rules="[isRequired, minLength]"
@@ -60,7 +57,6 @@
       :type="showConfirmPassword ? 'text' : 'password'"
       label="Confirm password"
       outlined
-      rounded
       class="form-input"
       :rules="[isRequired, passwordMatches]"
       autocomplete="new-password"
@@ -135,22 +131,24 @@ const showConfirmPassword = ref(false);
 .form-input {
   :deep(.q-field__control) {
     height: 48px;
+    border-radius: 9px;
   }
 
   :deep(.q-field__control::before) {
-    border-color: #cbd5e1;
+    border-color: #d3d9e1;
   }
 }
 
 .submit-btn {
   height: 48px;
   margin-top: 8px;
-  border-radius: 24px;
+  border-radius: 9px;
+  color: #fff;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  background: linear-gradient(135deg, #219ebc 0%, #1b7f99 100%);
-  box-shadow: 0 10px 24px rgba(33, 158, 188, 0.35);
+  background: #1769e0;
+  box-shadow: 0 7px 18px rgba(23, 105, 224, 0.22);
 
   :deep(.q-spinner) {
     color: #fff;
@@ -159,14 +157,14 @@ const showConfirmPassword = ref(false);
 
 .signin-btn {
   height: 48px;
-  border-radius: 24px;
+  border-radius: 9px;
   font-size: 15px;
   font-weight: 500;
-  color: #023047;
-  border-color: #cbd5e1;
+  color: #1769e0;
+  border-color: #c9d3e1;
 
   :deep(span) {
-    color: #023047;
+    color: #1769e0;
   }
 }
 

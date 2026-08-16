@@ -1,7 +1,10 @@
-from sqlalchemy import Boolean, String
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, Enum, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UuidPk
+from app.models.enums import UserRole
 
 
 class User(UuidPk, Base, TimestampMixin):
@@ -11,6 +14,23 @@ class User(UuidPk, Base, TimestampMixin):
     full_name: Mapped[str] = mapped_column(String(255))
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    failed_login_attempts: Mapped[int] = mapped_column(
+        Integer, default=0, server_default="0", nullable=False
+    )
+    locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    role: Mapped[UserRole] = mapped_column(
+        Enum(
+            UserRole,
+            native_enum=False,
+            length=30,
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        default=UserRole.JOB_APPLICANT,
+        index=True,
+    )
 
     opportunities = relationship(
         "JobOpportunity",
@@ -28,3 +48,7 @@ class User(UuidPk, Base, TimestampMixin):
     notifications = relationship(
         "Notification", back_populates="user", cascade="all, delete-orphan"
     )
+    auth_sessions = relationship(
+        "AuthSession", back_populates="user", cascade="all, delete-orphan"
+    )
+    login_audit_logs = relationship("LoginAuditLog", back_populates="user")

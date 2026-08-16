@@ -8,6 +8,7 @@ from app.repositories.opportunity_repository import OpportunityRepository
 from app.repositories.resume_repository import ResumeRepository
 from app.repositories.status_history_repository import ApplicationStatusHistoryRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.system_setting_repository import SystemSettingRepository
 
 __all__ = [
     "ApplicationRepository",
@@ -20,4 +21,5 @@ __all__ = [
     "OpportunityRepository",
     "ResumeRepository",
     "UserRepository",
+    "SystemSettingRepository",
 ]

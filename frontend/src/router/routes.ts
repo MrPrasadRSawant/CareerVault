@@ -14,9 +14,37 @@ const routes: RouteRecordRaw[] = [
     meta: { guestOnly: true }
   },
   {
+    path: "/system-admin",
+    component: () => import("@/layouts/SystemAdminLayout.vue"),
+    meta: { requiresAdmin: true },
+    children: [
+      { path: "", redirect: "/system-admin/overview" },
+      {
+        path: "overview",
+        name: "system-admin-overview",
+        component: () => import("@/modules/SystemAdmin/AdminDashboardPage.vue")
+      },
+      {
+        path: "users",
+        name: "system-admin-users",
+        component: () => import("@/modules/SystemAdmin/AdminUsersPage.vue")
+      },
+      {
+        path: "login-activity",
+        name: "system-admin-login-activity",
+        component: () => import("@/modules/SystemAdmin/AdminSecurityPage.vue")
+      },
+      {
+        path: "settings",
+        name: "system-admin-settings",
+        component: () => import("@/modules/SystemAdmin/AdminSettingsPage.vue")
+      }
+    ]
+  },
+  {
     path: "/",
     component: () => import("@/layouts/MainLayout.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresApplicant: true },
     children: [
       { path: "", redirect: "/dashboard" },
       {

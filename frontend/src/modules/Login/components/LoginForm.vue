@@ -5,7 +5,6 @@
       type="email"
       label="Email address"
       outlined
-      rounded
       class="form-input"
       :rules="[isRequired, isEmail]"
       autocomplete="email"
@@ -21,7 +20,6 @@
       :type="showPassword ? 'text' : 'password'"
       label="Password"
       outlined
-      rounded
       class="form-input"
       :rules="[isRequired]"
       autocomplete="current-password"
@@ -91,22 +89,44 @@ const showPassword = ref(false);
 .form-input {
   :deep(.q-field__control) {
     height: 48px;
+    border-radius: 9px;
+    background: #f9fafc;
   }
 
   :deep(.q-field__control::before) {
-    border-color: #cbd5e1;
+    border-color: #d3d9e1;
+  }
+
+  :deep(.q-field__control:hover::before) {
+    border-color: #aab5c4;
+  }
+
+  :deep(.q-field__prepend),
+  :deep(.q-field__append) {
+    color: #7c8798;
+  }
+
+  &.q-field--focused :deep(.q-field__control) {
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(23, 105, 224, 0.08);
   }
 }
 
 .signin-btn {
   height: 48px;
   margin-top: 8px;
-  border-radius: 24px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  background: linear-gradient(135deg, #219ebc 0%, #1b7f99 100%);
-  box-shadow: 0 10px 24px rgba(33, 158, 188, 0.35);
+  border-radius: 9px;
+  color: #fff;
+  background: #1769e0;
+  box-shadow: 0 8px 20px rgba(23, 105, 224, 0.25);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+
+  &:hover {
+    background: #145bc2;
+    box-shadow: 0 10px 24px rgba(23, 105, 224, 0.3);
+  }
 
   :deep(.q-spinner) {
     color: #fff;
@@ -115,14 +135,14 @@ const showPassword = ref(false);
 
 .register-btn {
   height: 48px;
-  border-radius: 24px;
-  font-size: 15px;
-  font-weight: 500;
-  color: #023047;
-  border-color: #cbd5e1;
+  border-radius: 9px;
+  color: #1769e0;
+  border-color: #c9d3e1;
+  font-size: 14px;
+  font-weight: 650;
 
   :deep(span) {
-    color: #023047;
+    color: #1769e0;
   }
 }
 
@@ -131,15 +151,15 @@ const showPassword = ref(false);
   align-items: center;
   gap: 12px;
   margin: 4px 0;
-  color: #94a3b8;
-  font-size: 13px;
+  color: #98a2b1;
+  font-size: 12px;
 
   &::before,
   &::after {
     content: "";
     flex: 1;
     height: 1px;
-    background: #e2e8f0;
+    background: #e5e9ee;
   }
 }
 </style>

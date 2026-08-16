@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import EmailStr, Field
 
 from app.schemas.common import ORMModel
+from app.models.enums import UserRole
 
 
 class UserCreate(ORMModel):
@@ -21,4 +22,5 @@ class UserRead(ORMModel):
     email: EmailStr
     full_name: str
     is_active: bool
+    role: UserRole
     created_at: datetime

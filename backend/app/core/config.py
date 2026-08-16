@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     ENABLE_API_DOCS: bool = True
     SECRET_KEY: str = "replace-with-a-secure-random-secret-key"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    AUTH_AUDIT_RETENTION_DAYS: int = 90
+    AUTH_SESSION_ACTIVITY_UPDATE_SECONDS: int = 60
     ALGORITHM: str = "HS256"
 
     DATABASE_URL: str = "sqlite:///./careervault.db"

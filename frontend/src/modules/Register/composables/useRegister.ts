@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useAuthStore } from "@/stores/auth";
+import { axios } from "@/api/client";
 
 export function useRegister() {
   const auth = useAuthStore();
@@ -53,10 +54,16 @@ export function useRegister() {
         message: "Account created. Welcome to CareerVault!"
       });
       await router.push("/dashboard");
-    } catch {
+    } catch (error: unknown) {
+      const detail = axios.isAxiosError(error)
+        ? error.response?.data?.detail
+        : null;
       $q.notify({
         type: "negative",
-        message: "An account with this email already exists"
+        message:
+          typeof detail === "string"
+            ? detail
+            : "We could not create your account. Please try again."
       });
     } finally {
       submitting.value = false;

@@ -4,23 +4,23 @@
 
     <div class="form-panel">
       <div class="mobile-brand">
-        <div class="mobile-brand-mark">
-          <q-icon name="rocket_launch" size="20px" />
-        </div>
+        <div class="mobile-brand-mark">CV</div>
         <span>Career<span class="accent">Vault</span></span>
       </div>
 
       <div class="form-inner">
         <div class="form-heading">
+          <div class="form-eyebrow">
+            <q-icon name="verified_user" size="15px" />
+            Secure access
+          </div>
           <h1>{{ title }}</h1>
           <p>{{ subtitle }}</p>
         </div>
 
         <slot />
 
-        <p class="form-hint">
-          By signing up you agree to the Terms of Service and Privacy Policy.
-        </p>
+        <p class="form-hint">{{ footerText }}</p>
       </div>
     </div>
   </div>
@@ -35,8 +35,11 @@ withDefaults(
   defineProps<{
     title: string;
     subtitle: string;
+    footerText?: string;
   }>(),
-  {}
+  {
+    footerText: "Your career data is private and securely stored."
+  }
 );
 </script>
 
@@ -44,49 +47,80 @@ withDefaults(
 .auth-page {
   display: flex;
   min-height: 100vh;
+  background: #f3f5f7;
 }
 
 .form-panel {
-  flex: 1;
+  flex: 0 0 48%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 32px;
-  background: #f8fafc;
+  background: #fff;
 }
 
 .form-inner {
   width: 100%;
-  max-width: 400px;
+  max-width: 405px;
   display: flex;
   flex-direction: column;
+  padding: 0;
+}
+
+.mobile-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: #fff;
+  background: #1769e0;
+  box-shadow: 0 5px 14px rgba(23, 105, 224, 0.2);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
 }
 
 .form-heading {
   margin-bottom: 28px;
 
+  .form-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: #1769e0;
+    background: #edf4ff;
+    font-size: 10.5px;
+    font-weight: 750;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
+  }
+
   h1 {
     margin: 0 0 8px;
-    font-size: 28px;
-    font-weight: 700;
-    color: #023047;
-    letter-spacing: -0.3px;
+    font-size: 27px;
+    font-weight: 750;
+    color: #172033;
+    letter-spacing: -0.45px;
   }
 
   p {
     margin: 0;
     font-size: 15px;
-    color: #64748b;
+    color: #748094;
   }
 }
 
 .form-hint {
-  margin: 24px 0 0;
-  font-size: 12.5px;
+  margin: 22px 0 0;
+  font-size: 11.5px;
   line-height: 1.6;
   text-align: center;
-  color: #94a3b8;
+  color: #98a2b1;
 }
 
 .mobile-brand {
@@ -94,30 +128,50 @@ withDefaults(
   align-items: center;
   gap: 10px;
   margin-bottom: 36px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #023047;
-}
-
-.mobile-brand-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  color: #fff;
-  background: linear-gradient(135deg, #219ebc 0%, #8ecae6 100%);
+  font-size: 18px;
+  font-weight: 800;
+  color: #172033;
 }
 
 .accent {
-  color: #fb8500;
+  color: #1769e0;
 }
 
 @media (max-width: 1023px) {
+  .form-panel {
+    flex-basis: 100%;
+    background:
+      radial-gradient(
+        circle at 12% 8%,
+        rgba(23, 105, 224, 0.09),
+        transparent 34%
+      ),
+      #f3f5f7;
+  }
+
   .mobile-brand {
     display: flex;
     align-self: flex-start;
+  }
+}
+
+@media (max-width: 540px) {
+  .form-panel {
+    justify-content: flex-start;
+    padding: 22px 16px;
+  }
+
+  .mobile-brand {
+    margin-bottom: 22px;
+  }
+
+  .form-inner {
+    max-width: none;
+    padding: 28px 22px 24px;
+    border: 1px solid #dfe4ea;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 32px rgba(30, 42, 56, 0.08);
   }
 }
 </style>

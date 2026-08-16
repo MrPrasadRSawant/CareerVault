@@ -9,6 +9,7 @@ import {
 import routes from "./routes";
 
 const TOKEN_KEY = "cv_token";
+const ROLE_KEY = "cv_role";
 
 /*
  * If not building with SSR mode, you can
@@ -38,13 +39,30 @@ export default defineRouter((/* { store, ssrContext } */) => {
 
   Router.beforeEach(to => {
     const isAuthenticated = localStorage.getItem(TOKEN_KEY) !== null;
+    const role = localStorage.getItem(ROLE_KEY);
 
-    if (to.meta.requiresAuth === true && !isAuthenticated) {
+    if (to.meta.requiresAdmin === true) {
+      if (!isAuthenticated) {
+        return {
+          name: "login",
+          query: { redirect: to.fullPath }
+        };
+      }
+      if (role !== "system_admin") return { name: "dashboard" };
+    }
+
+    if (to.meta.requiresApplicant === true && !isAuthenticated) {
       return { name: "login", query: { redirect: to.fullPath } };
     }
 
+    if (to.meta.requiresApplicant === true && role === "system_admin") {
+      return { name: "system-admin-overview" };
+    }
+
     if (to.meta.guestOnly === true && isAuthenticated) {
-      return { name: "dashboard" };
+      return role === "system_admin"
+        ? { name: "system-admin-overview" }
+        : { name: "dashboard" };
     }
   });
 

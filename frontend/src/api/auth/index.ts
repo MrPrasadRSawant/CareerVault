@@ -1,7 +1,7 @@
 import { api } from "@/api/client";
-import type { TokenWithUser, User } from "./types";
+import type { TokenWithUser, User, UserRole } from "./types";
 
-export type { TokenWithUser, User };
+export type { TokenWithUser, User, UserRole };
 
 export const authApi = {
   register(
@@ -16,6 +16,10 @@ export const authApi = {
 
   login(email: string, password: string): Promise<TokenWithUser> {
     return api.post("/auth/login", { email, password }).then(r => r.data);
+  },
+
+  logout(): Promise<void> {
+    return api.post("/auth/logout").then(() => undefined);
   },
 
   me(): Promise<User> {

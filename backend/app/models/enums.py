@@ -1,6 +1,33 @@
 import enum
 
 
+class UserRole(str, enum.Enum):
+    JOB_APPLICANT = "job_applicant"
+    SYSTEM_ADMIN = "system_admin"
+
+
+class AuthEventType(str, enum.Enum):
+    LOGIN = "login"
+    REGISTRATION = "registration"
+
+
+class AuthOutcome(str, enum.Enum):
+    SUCCESS = "success"
+    FAILURE = "failure"
+
+
+class AuthFailureReason(str, enum.Enum):
+    INVALID_CREDENTIALS = "invalid_credentials"
+    ACCOUNT_BLOCKED = "account_blocked"
+    TEMPORARILY_LOCKED = "temporarily_locked"
+    ROLE_NOT_ALLOWED = "role_not_allowed"
+
+
+class AuthSessionEndReason(str, enum.Enum):
+    LOGOUT = "logout"
+    ACCOUNT_BLOCKED = "account_blocked"
+
+
 class OpportunityStatus(str, enum.Enum):
     DRAFT = "draft"
     SAVED = "saved"

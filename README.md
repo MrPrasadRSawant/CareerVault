@@ -261,6 +261,73 @@ Run the database migrations:
 alembic upgrade head
 ```
 
+Create the private product-owner administrator account. This account is kept
+separate from applicant registration and receives exactly one role,
+`system_admin`. The command prompts for a password of at least 12 characters:
+
+```bash
+python -m app.scripts.create_system_admin \
+  --email owner@example.com \
+  --name "CareerVault Owner"
+```
+
+When running with Docker, execute the same command in the backend container:
+
+```bash
+docker compose exec backend python -m app.scripts.create_system_admin \
+  --email owner@example.com \
+  --name "CareerVault Owner"
+```
+
+Applicants and administrators both sign in at `/login`. The authenticated user's
+role determines whether the app opens the applicant dashboard or the system admin
+control center. Public registration always creates a `job_applicant`; existing
+users are assigned that role by the database migration. Administrator and
+applicant tokens cannot access each other's APIs. The administration API exposes
+only account identity, role, registration timestamps, and access status; it does
+not expose applicants' opportunities, applications, resumes, or career details.
+
+### Registration capacity
+
+Public applicant registration is capped at 1,000 accounts per UTC calendar
+day by default. The System Admin can change the limit from **Platform
+settings**. The value is stored in `system_settings`; atomic daily usage is
+stored in `daily_registration_counters`. When the limit is reached, the API
+returns HTTP `429` with a `Retry-After` header. Existing users can continue to
+sign in normally.
+
+### Authentication audit and session records
+
+CareerVault records successful and failed authentication events for incident
+review. System administrators can review the account reference (when known),
+role, outcome, coarse failure reason, event time, validated client IP address,
+and a sanitized user-agent string limited to 512 characters. Passwords, access
+tokens, request/response bodies, and career records are never included.
+
+Unknown email addresses are not stored. A keyed one-way identifier fingerprint
+is retained only to correlate repeated attempts against the same unknown
+identifier. Audit records are removed after `AUTH_AUDIT_RETENTION_DAYS` (90
+days by default).
+
+Each issued token is associated with a server-side session. Explicit sign-out
+produces an exact session duration. If a browser closes or loses connectivity
+without signing out, duration is labeled as an estimate based on the last
+authenticated request. Session activity writes are throttled by
+`AUTH_SESSION_ACTIVITY_UPDATE_SECONDS`.
+
+Every login attempt is appended as a separate audit event; existing events are
+never updated to represent a later attempt. Known accounts are temporarily
+locked for 20 minutes after three consecutive invalid-password attempts by
+default. A successful login resets the consecutive-failure count. System
+Admins can change both the attempt threshold and lockout duration from
+**Platform settings**. The values are stored as `failed_login_attempt_limit`
+and `login_lockout_duration_minutes` in `system_settings`.
+
+The recorded IP uses the ASGI client address. In a reverse-proxy deployment,
+configure the application server to trust forwarding headers only from your
+controlled proxy; the application does not trust arbitrary
+`X-Forwarded-For` values directly.
+
 Start the FastAPI server:
 
 ```bash

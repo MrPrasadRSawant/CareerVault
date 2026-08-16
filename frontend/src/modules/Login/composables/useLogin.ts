@@ -1,6 +1,7 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useQuasar } from "quasar";
+import { axios } from "@/api/client";
 import { useAuthStore } from "@/stores/auth";
 
 export function useLogin() {
@@ -34,15 +35,30 @@ export function useLogin() {
     submitting.value = true;
     try {
       await auth.login(email.value, password.value);
-      const redirect =
+      const requestedRedirect =
         typeof route.query.redirect === "string"
           ? route.query.redirect
-          : "/dashboard";
+          : undefined;
+      const redirect =
+        auth.role === "system_admin"
+          ? requestedRedirect?.startsWith("/system-admin")
+            ? requestedRedirect
+            : "/system-admin/overview"
+          : requestedRedirect !== undefined &&
+              !requestedRedirect.startsWith("/system-admin")
+            ? requestedRedirect
+            : "/dashboard";
       await router.push(redirect);
-    } catch {
+    } catch (error: unknown) {
+      const detail = axios.isAxiosError(error)
+        ? error.response?.data?.detail
+        : null;
       $q.notify({
         type: "negative",
-        message: "Incorrect email or password"
+        message:
+          typeof detail === "string"
+            ? detail
+            : "Incorrect email or password"
       });
     } finally {
       submitting.value = false;

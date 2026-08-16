@@ -408,10 +408,10 @@ onBeforeUnmount(() => {
   if (notificationPoll) clearInterval(notificationPoll);
 });
 
-function onLogout() {
+async function onLogout() {
   notificationStore.clear();
-  auth.logout();
-  void router.push({ name: "login" });
+  await auth.logout();
+  await router.push({ name: "login" });
 }
 </script>
 

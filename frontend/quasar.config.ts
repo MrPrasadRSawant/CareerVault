@@ -46,7 +46,7 @@ export default defineConfig((/* ctx */) => {
       // https://v2.quasar.dev/quasar-cli-vite/page-routing-with-vue-router#filename-based-routing
       // filenameBasedRouting: true,
 
-      vueRouterMode: "hash" // available values: 'hash', 'history'
+      vueRouterMode: "history" // clean URLs; production servers use an index.html SPA fallback
       // vueRouterBase,
 
       // publicPath: '/',
@@ -82,14 +82,14 @@ export default defineConfig((/* ctx */) => {
       config: {
         brand: {
           // A calm, high-contrast palette suited to a professional career workspace.
-          primary: "#1F6F8B",
-          secondary: "#6C8E9E",
-          accent: "#D99A2B",
-          dark: "#102A43",
-          positive: "#2F855A",
-          negative: "#C53030",
-          warning: "#B7791F",
-          info: "#2B6CB0"
+          primary: "#1769E0",
+          secondary: "#63728A",
+          accent: "#E8A11A",
+          dark: "#172033",
+          positive: "#249267",
+          negative: "#BA2F3A",
+          warning: "#B87808",
+          info: "#635BDF"
         }
       },
 

@@ -26,7 +26,14 @@ api.interceptors.response.use(
       error?.config?.url !== "/auth/register"
     ) {
       localStorage.removeItem("cv_token");
-      window.location.hash = "#/login";
+      const adminContext =
+        localStorage.getItem("cv_role") === "system_admin" ||
+        window.location.pathname.startsWith("/system-admin");
+      localStorage.removeItem("cv_role");
+      const redirect = adminContext
+        ? `/login?redirect=${encodeURIComponent("/system-admin/overview")}`
+        : "/login";
+      window.location.assign(redirect);
     }
     return Promise.reject(error);
   }
