@@ -51,10 +51,7 @@ const props = defineProps<{
 }>();
 defineEmits<{
   (event: "update:modelValue", value: boolean): void;
-  (
-    event: "export",
-    columns: CoverLetterExportColumnKey[]
-  ): void;
+  (event: "export", columns: CoverLetterExportColumnKey[]): void;
 }>();
 
 const columns = coverLetterExportColumns;
@@ -66,8 +63,7 @@ const selected = ref<CoverLetterExportColumnKey[]>([
 watch(
   () => props.modelValue,
   open => {
-    if (open)
-      selected.value = ["name", "file_name", "created_at"];
+    if (open) selected.value = ["name", "file_name", "created_at"];
   }
 );
 </script>

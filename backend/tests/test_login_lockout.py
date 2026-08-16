@@ -21,6 +21,8 @@ def register_user(client):
             "email": USER_EMAIL,
             "full_name": "Lockout User",
             "password": USER_PASSWORD,
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     assert response.status_code == 201

@@ -54,8 +54,7 @@
         @click="$emit('clear')"
       />
       <div class="workspace-count"
-        >{{ resultCount }}
-        {{ resultCount === 1 ? "letter" : "letters" }}</div
+        >{{ resultCount }} {{ resultCount === 1 ? "letter" : "letters" }}</div
       >
     </div>
     <q-slide-transition>

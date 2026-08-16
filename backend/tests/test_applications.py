@@ -81,6 +81,8 @@ def test_interview_scoped_to_application_owner(client, auth_headers):
             "email": "other2@example.com",
             "full_name": "Other User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     other_login = client.post(

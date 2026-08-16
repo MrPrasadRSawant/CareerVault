@@ -54,6 +54,8 @@ def auth_headers(client):
             "email": "user@example.com",
             "full_name": "Test User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     response = client.post(

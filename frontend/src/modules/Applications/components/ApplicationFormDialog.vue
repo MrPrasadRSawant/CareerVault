@@ -115,8 +115,8 @@ const selectableOpportunityOptions = computed(() =>
         (props.lockOpportunity && opportunity.id === props.initialOpportunityId)
     )
     .map(opportunity => ({
-    label: `${opportunity.title}${opportunity.company_name ? ` · ${opportunity.company_name}` : ""}`,
-    value: opportunity.id
+      label: `${opportunity.title}${opportunity.company_name ? ` · ${opportunity.company_name}` : ""}`,
+      value: opportunity.id
     }))
 );
 const opportunityOptions = ref(selectableOpportunityOptions.value);

@@ -26,10 +26,7 @@
       :saving="saving"
       @save="onSave"
     />
-    <CoverLetterViewDialog
-      v-model="showView"
-      :letter="viewingLetter"
-    />
+    <CoverLetterViewDialog v-model="showView" :letter="viewingLetter" />
     <CoverLetterExportDialog
       v-model="showExport"
       :row-count="filteredRows.length"

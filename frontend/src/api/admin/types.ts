@@ -149,6 +149,12 @@ export interface PasswordPolicySettings {
   updated_at: string;
 }
 
+export interface TermsOfServiceSettings {
+  content_html: string;
+  version: number;
+  updated_at: string;
+}
+
 export interface AdminExceptionOverview {
   exceptions_last_24_hours: number;
   exceptions_last_7_days: number;

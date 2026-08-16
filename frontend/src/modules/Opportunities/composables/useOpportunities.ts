@@ -19,10 +19,7 @@ import {
   parseCsv,
   statusLabel
 } from "../utils";
-import type {
-  OpportunityExportColumnKey,
-  OpportunityFilters
-} from "../types";
+import type { OpportunityExportColumnKey, OpportunityFilters } from "../types";
 
 export function useOpportunities() {
   const $q = useQuasar();
@@ -78,12 +75,47 @@ export function useOpportunities() {
         .join(" ")
         .toLowerCase();
       if (search && !text.includes(search)) return false;
-      if (company && !String(opportunity.company_name ?? "").toLowerCase().includes(company)) return false;
-      if (location && !String(opportunity.job_location ?? "").toLowerCase().includes(location)) return false;
-      if (experience && !String(opportunity.experience_level ?? "").toLowerCase().includes(experience)) return false;
-      if (skills && !(opportunity.required_skills ?? []).join(" ").toLowerCase().includes(skills)) return false;
-      if (from !== null && (!opportunity.posted_on_utc || new Date(opportunity.posted_on_utc).getTime() < from)) return false;
-      if (to !== null && (!opportunity.posted_on_utc || new Date(opportunity.posted_on_utc).getTime() > to)) return false;
+      if (
+        company &&
+        !String(opportunity.company_name ?? "")
+          .toLowerCase()
+          .includes(company)
+      )
+        return false;
+      if (
+        location &&
+        !String(opportunity.job_location ?? "")
+          .toLowerCase()
+          .includes(location)
+      )
+        return false;
+      if (
+        experience &&
+        !String(opportunity.experience_level ?? "")
+          .toLowerCase()
+          .includes(experience)
+      )
+        return false;
+      if (
+        skills &&
+        !(opportunity.required_skills ?? [])
+          .join(" ")
+          .toLowerCase()
+          .includes(skills)
+      )
+        return false;
+      if (
+        from !== null &&
+        (!opportunity.posted_on_utc ||
+          new Date(opportunity.posted_on_utc).getTime() < from)
+      )
+        return false;
+      if (
+        to !== null &&
+        (!opportunity.posted_on_utc ||
+          new Date(opportunity.posted_on_utc).getTime() > to)
+      )
+        return false;
       return true;
     });
   });
@@ -129,7 +161,8 @@ export function useOpportunities() {
     } catch {
       $q.notify({
         type: "warning",
-        message: "Resumes could not be loaded; you can still create the application"
+        message:
+          "Resumes could not be loaded; you can still create the application"
       });
     }
   }
@@ -148,7 +181,10 @@ export function useOpportunities() {
     }
   }
 
-  async function saveOpportunity(id: string | null, payload: OpportunityCreate) {
+  async function saveOpportunity(
+    id: string | null,
+    payload: OpportunityCreate
+  ) {
     saving.value = true;
     try {
       if (id) {
@@ -172,7 +208,10 @@ export function useOpportunities() {
     }
   }
 
-  async function updateStatus(opportunity: Opportunity, status: OpportunityStatus) {
+  async function updateStatus(
+    opportunity: Opportunity,
+    status: OpportunityStatus
+  ) {
     if (opportunity.status === status) return;
     updatingStatusIds.value = [...updatingStatusIds.value, opportunity.id];
     try {
@@ -182,7 +221,9 @@ export function useOpportunities() {
     } catch {
       $q.notify({ type: "negative", message: "Could not update status" });
     } finally {
-      updatingStatusIds.value = updatingStatusIds.value.filter(id => id !== opportunity.id);
+      updatingStatusIds.value = updatingStatusIds.value.filter(
+        id => id !== opportunity.id
+      );
     }
   }
 
@@ -204,11 +245,18 @@ export function useOpportunities() {
     }).onOk(async () => {
       try {
         await opportunityApi.remove(opportunity.id);
-        selectedRows.value = selectedRows.value.filter(row => row.id !== opportunity.id);
-        opportunities.value = opportunities.value.filter(row => row.id !== opportunity.id);
+        selectedRows.value = selectedRows.value.filter(
+          row => row.id !== opportunity.id
+        );
+        opportunities.value = opportunities.value.filter(
+          row => row.id !== opportunity.id
+        );
         $q.notify({ type: "positive", message: "Opportunity deleted" });
       } catch {
-        $q.notify({ type: "negative", message: "Could not delete opportunity" });
+        $q.notify({
+          type: "negative",
+          message: "Could not delete opportunity"
+        });
       }
     });
   }
@@ -226,11 +274,19 @@ export function useOpportunities() {
       try {
         await opportunityApi.bulkRemove(ids);
         const selected = new Set(ids);
-        opportunities.value = opportunities.value.filter(row => !selected.has(row.id));
+        opportunities.value = opportunities.value.filter(
+          row => !selected.has(row.id)
+        );
         selectedRows.value = [];
-        $q.notify({ type: "positive", message: `${ids.length} opportunities deleted` });
+        $q.notify({
+          type: "positive",
+          message: `${ids.length} opportunities deleted`
+        });
       } catch {
-        $q.notify({ type: "negative", message: "Could not delete selected opportunities" });
+        $q.notify({
+          type: "negative",
+          message: "Could not delete selected opportunities"
+        });
       }
     });
   }
@@ -248,7 +304,10 @@ export function useOpportunities() {
       "expected_work_experience",
       "job_location"
     ];
-    downloadCsv(headers.join(",") + "\n", "careervault-opportunities-template.csv");
+    downloadCsv(
+      headers.join(",") + "\n",
+      "careervault-opportunities-template.csv"
+    );
   }
 
   async function importCsv(file: File) {
@@ -257,7 +316,8 @@ export function useOpportunities() {
       const rows = parseCsv(await file.text());
       if (rows.length < 2) throw new Error("CSV has no rows");
       const headers = rows[0]!.map(header => header.trim().toLowerCase());
-      const value = (row: string[], name: string) => row[headers.indexOf(name)]?.trim() || null;
+      const value = (row: string[], name: string) =>
+        row[headers.indexOf(name)]?.trim() || null;
       let imported = 0;
       for (const row of rows.slice(1)) {
         const title = value(row, "role");
@@ -270,18 +330,28 @@ export function useOpportunities() {
           company_url: value(row, "company_url"),
           posted_on_utc: normalizeDateTime(value(row, "posted_on_utc") ?? ""),
           description: value(row, "job_description"),
-          required_skills: (value(row, "skills_asked") ?? "").split(/[;,]/).map(skill => skill.trim()).filter(Boolean),
+          required_skills: (value(row, "skills_asked") ?? "")
+            .split(/[;,]/)
+            .map(skill => skill.trim())
+            .filter(Boolean),
           experience_level: value(row, "expected_work_experience"),
           job_location: value(row, "job_location"),
           status: "draft"
         });
         imported += 1;
       }
-      $q.notify({ type: "positive", message: `${imported} opportunities imported as drafts` });
+      $q.notify({
+        type: "positive",
+        message: `${imported} opportunities imported as drafts`
+      });
       await load();
       await notificationStore.refreshUnseenCount();
     } catch {
-      $q.notify({ type: "negative", message: "Could not import CSV. Download the template to check the column names." });
+      $q.notify({
+        type: "negative",
+        message:
+          "Could not import CSV. Download the template to check the column names."
+      });
     } finally {
       importing.value = false;
     }
@@ -292,9 +362,14 @@ export function useOpportunities() {
   }
 
   function exportFiltered(columns: OpportunityExportColumnKey[]) {
-    const selected = opportunityExportColumns.filter(column => columns.includes(column.key));
+    const selected = opportunityExportColumns.filter(column =>
+      columns.includes(column.key)
+    );
     if (!selected.length) {
-      $q.notify({ type: "warning", message: "Choose at least one column to export" });
+      $q.notify({
+        type: "warning",
+        message: "Choose at least one column to export"
+      });
       return;
     }
     const lines = [
@@ -303,13 +378,21 @@ export function useOpportunities() {
         selected.map(column => csvEscape(column.value(opportunity))).join(",")
       )
     ];
-    downloadCsv(`\uFEFF${lines.join("\r\n")}\r\n`, `careervault-opportunities-${new Date().toISOString().slice(0, 10)}.csv`);
+    downloadCsv(
+      `\uFEFF${lines.join("\r\n")}\r\n`,
+      `careervault-opportunities-${new Date().toISOString().slice(0, 10)}.csv`
+    );
     exportDialog.value = false;
-    $q.notify({ type: "positive", message: `${filteredOpportunities.value.length} opportunities exported` });
+    $q.notify({
+      type: "positive",
+      message: `${filteredOpportunities.value.length} opportunities exported`
+    });
   }
 
   function downloadCsv(content: string, filename: string) {
-    const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
+    const url = URL.createObjectURL(
+      new Blob([content], { type: "text/csv;charset=utf-8" })
+    );
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = filename;

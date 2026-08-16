@@ -4,6 +4,7 @@ import { useQuasar } from "quasar";
 import { useAuthStore } from "@/stores/auth";
 import { axios } from "@/api/client";
 import { authApi } from "@/api/auth";
+import { legalApi } from "@/api/legal";
 
 export function useRegister() {
   const auth = useAuthStore();
@@ -14,6 +15,9 @@ export function useRegister() {
   const email = ref("");
   const password = ref("");
   const confirmPassword = ref("");
+  const termsAccepted = ref(false);
+  const termsVersion = ref<number | null>(null);
+  const termsLoading = ref(true);
   const submitting = ref(false);
   const passwordMinimumLength = ref(8);
   const passwordMaximumLength = ref(20);
@@ -26,6 +30,8 @@ export function useRegister() {
       password.value.length <= passwordMaximumLength.value &&
       confirmPassword.value.length > 0 &&
       password.value === confirmPassword.value &&
+      termsAccepted.value &&
+      termsVersion.value !== null &&
       !submitting.value
   );
 
@@ -53,9 +59,15 @@ export function useRegister() {
   }
 
   async function onSubmit() {
+    if (!termsAccepted.value || termsVersion.value === null) return;
     submitting.value = true;
     try {
-      await auth.register(fullName.value.trim(), email.value, password.value);
+      await auth.register(
+        fullName.value.trim(),
+        email.value,
+        password.value,
+        termsVersion.value
+      );
       $q.notify({
         type: "positive",
         message: "Account created. Welcome to CareerVault!"
@@ -65,6 +77,15 @@ export function useRegister() {
       const detail = axios.isAxiosError(error)
         ? error.response?.data?.detail
         : null;
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        try {
+          const latestTerms = await legalApi.termsOfService();
+          termsVersion.value = latestTerms.version;
+          termsAccepted.value = false;
+        } catch {
+          termsVersion.value = null;
+        }
+      }
       $q.notify({
         type: "negative",
         message:
@@ -82,15 +103,25 @@ export function useRegister() {
     email.value = "";
     password.value = "";
     confirmPassword.value = "";
+    termsAccepted.value = false;
   }
 
   onMounted(async () => {
     try {
-      const policy = await authApi.passwordPolicy();
+      const [policy, terms] = await Promise.all([
+        authApi.passwordPolicy(),
+        legalApi.termsOfService()
+      ]);
       passwordMinimumLength.value = policy.minimum_length;
       passwordMaximumLength.value = policy.maximum_length;
+      termsVersion.value = terms.version;
     } catch {
-      // Keep the secure database defaults when the policy request is unavailable.
+      $q.notify({
+        type: "negative",
+        message: "Registration details could not be loaded. Please try again."
+      });
+    } finally {
+      termsLoading.value = false;
     }
   });
 
@@ -99,6 +130,8 @@ export function useRegister() {
     email,
     password,
     confirmPassword,
+    termsAccepted,
+    termsLoading,
     submitting,
     canSubmit,
     isRequired,

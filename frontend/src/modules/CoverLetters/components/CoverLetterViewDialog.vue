@@ -25,7 +25,10 @@
         </div>
         <div v-if="letter.content" class="content-block">
           <div class="detail-label">Content</div>
-          <div class="letter-content rendered-content" v-html="letter.content" />
+          <div
+            class="letter-content rendered-content"
+            v-html="letter.content"
+          />
         </div>
         <p v-else class="text-grey-6">This letter has no content yet.</p>
       </q-card-section>

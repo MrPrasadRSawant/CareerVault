@@ -1,6 +1,15 @@
 <template>
-  <div class="funnel-wrap" role="list" aria-label="Application conversion funnel">
-    <div v-for="(stage, index) in stages" :key="stage.label" class="funnel-stage" role="listitem">
+  <div
+    class="funnel-wrap"
+    role="list"
+    aria-label="Application conversion funnel"
+  >
+    <div
+      v-for="(stage, index) in stages"
+      :key="stage.label"
+      class="funnel-stage"
+      role="listitem"
+    >
       <div class="funnel-stage-header">
         <div class="funnel-stage-name">
           <span class="funnel-index">{{ index + 1 }}</span>
@@ -32,13 +41,16 @@
     <div v-if="total > 0" class="funnel-insight">
       <q-icon name="priority_high" size="16px" />
       <span>
-        Biggest drop-off: {{ bottleneck.from }} → {{ bottleneck.to }}
-        ({{ bottleneck.loss }} applications)
+        Biggest drop-off: {{ bottleneck.from }} → {{ bottleneck.to }} ({{
+          bottleneck.loss
+        }}
+        applications)
       </span>
     </div>
 
     <div v-if="total === 0" class="funnel-empty">
-      Add your first application to start measuring conversion through your job search.
+      Add your first application to start measuring conversion through your job
+      search.
     </div>
   </div>
 </template>

@@ -52,6 +52,8 @@ def test_login_failures_successes_and_session_logout_are_audited(
             "email": "audited@example.com",
             "full_name": "Audited User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     assert register.status_code == 201

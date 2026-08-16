@@ -78,6 +78,28 @@
       </template>
     </q-input>
 
+    <div class="terms-consent">
+      <q-checkbox
+        v-model="termsAccepted"
+        color="primary"
+        :disable="termsLoading"
+        aria-label="Accept the Terms of Service"
+      />
+      <div>
+        I have read and agree to the
+        <router-link
+          :to="{ name: 'terms-of-service' }"
+          target="_blank"
+          rel="noopener"
+        >
+          Terms of Service
+        </router-link>
+        <span v-if="termsLoading" class="terms-loading">
+          <q-spinner size="12px" /> Loading current version…
+        </span>
+      </div>
+    </div>
+
     <q-btn
       type="submit"
       label="Create account"
@@ -115,6 +137,8 @@ const {
   email,
   password,
   confirmPassword,
+  termsAccepted,
+  termsLoading,
   submitting,
   canSubmit,
   isRequired,
@@ -187,5 +211,42 @@ const showConfirmPassword = ref(false);
     height: 1px;
     background: #e2e8f0;
   }
+}
+
+.terms-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: -2px;
+  padding: 11px 12px;
+  border: 1px solid #e0e6ed;
+  border-radius: 9px;
+  color: #5f6d80;
+  background: #f8fafc;
+  font-size: 12.5px;
+  line-height: 1.55;
+
+  :deep(.q-checkbox) {
+    margin: -7px 0 -7px -8px;
+  }
+
+  a {
+    color: #1769e0;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.terms-loading {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  color: #8a95a5;
+  font-size: 11px;
 }
 </style>

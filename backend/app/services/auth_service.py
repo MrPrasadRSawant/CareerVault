@@ -67,7 +67,13 @@ class AuthService:
             headers={"Retry-After": str(retry_after)},
         )
 
-    def register(self, email: str, full_name: str, password: str) -> User:
+    def register(
+        self,
+        email: str,
+        full_name: str,
+        password: str,
+        terms_version: int,
+    ) -> User:
         minimum, maximum = self.settings_repo.get_password_length_policy()
         if not minimum <= len(password) <= maximum:
             raise HTTPException(
@@ -82,6 +88,18 @@ class AuthService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail="An account with this email already exists",
             )
+        terms_content, current_terms_version, _setting = (
+            self.settings_repo.get_terms_of_service()
+        )
+        if terms_version != current_terms_version:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "The Terms of Service changed while you were registering. "
+                    "Please review and accept the latest version."
+                ),
+            )
+        accepted_at = datetime.now(timezone.utc)
         daily_limit = self.settings_repo.get_daily_registration_limit()
         user = self.user_repo.create_with_daily_registration_quota(
             email=email,
@@ -89,6 +107,9 @@ class AuthService:
             hashed_password=hash_password(password),
             registration_date=datetime.now(timezone.utc).date(),
             daily_limit=daily_limit,
+            terms_accepted_at=accepted_at,
+            terms_accepted_version=current_terms_version,
+            terms_accepted_content=terms_content,
         )
         if user is None:
             now = datetime.now(timezone.utc)

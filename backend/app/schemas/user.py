@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import EmailStr, Field
 
@@ -11,6 +12,8 @@ class UserCreate(ORMModel):
     email: EmailStr
     full_name: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=1, max_length=1024)
+    terms_accepted: Literal[True]
+    terms_version: int = Field(ge=1)
 
 
 class UserUpdate(ORMModel):

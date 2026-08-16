@@ -32,6 +32,27 @@ DEFAULT_PASSWORD_MIN_LENGTH = 8
 DEFAULT_PASSWORD_MAX_LENGTH = 20
 PASSWORD_MIN_LENGTH_DESCRIPTION = "Minimum accepted password character length."
 PASSWORD_MAX_LENGTH_DESCRIPTION = "Maximum accepted password character length."
+TERMS_OF_SERVICE_CONTENT_KEY = "terms_of_service_content"
+TERMS_OF_SERVICE_VERSION_KEY = "terms_of_service_version"
+TERMS_OF_SERVICE_CONTENT_DESCRIPTION = (
+    "Current rich-text Terms of Service shown during account registration."
+)
+TERMS_OF_SERVICE_VERSION_DESCRIPTION = (
+    "Revision number of the currently published Terms of Service."
+)
+DEFAULT_TERMS_OF_SERVICE_VERSION = 1
+DEFAULT_TERMS_OF_SERVICE_CONTENT = """<h1>CareerVault Terms of Service</h1>
+<p>Welcome to CareerVault. These Terms of Service govern your access to and use of the CareerVault platform.</p>
+<h2>Your account</h2>
+<p>You are responsible for providing accurate registration information, protecting your login credentials, and all activity performed through your account.</p>
+<h2>Acceptable use</h2>
+<p>Use CareerVault only for lawful career-management activities. Do not attempt to disrupt the service, access another person's account, upload harmful content, or misuse platform features.</p>
+<h2>Your content and privacy</h2>
+<p>You retain responsibility for the information you add to CareerVault. The platform processes that information to provide its features and protect the service.</p>
+<h2>Service availability</h2>
+<p>Features may be updated, suspended, or changed as the product evolves. Important changes to these terms will be published as a new version.</p>
+<h2>Contact</h2>
+<p>Contact the CareerVault product owner if you have questions about these terms.</p>"""
 
 
 class SystemSettingRepository:
@@ -113,6 +134,52 @@ class SystemSettingRepository:
         if not 8 <= minimum <= maximum <= 20:
             return DEFAULT_PASSWORD_MIN_LENGTH, DEFAULT_PASSWORD_MAX_LENGTH
         return minimum, maximum
+
+    def get_terms_of_service(self) -> tuple[str, int, SystemSetting]:
+        content_setting = self.db.get(
+            SystemSetting, TERMS_OF_SERVICE_CONTENT_KEY
+        )
+        if content_setting is None:
+            content_setting = SystemSetting(
+                key=TERMS_OF_SERVICE_CONTENT_KEY,
+                value=DEFAULT_TERMS_OF_SERVICE_CONTENT,
+                description=TERMS_OF_SERVICE_CONTENT_DESCRIPTION,
+            )
+            self.db.add(content_setting)
+
+        version_setting = self.db.get(
+            SystemSetting, TERMS_OF_SERVICE_VERSION_KEY
+        )
+        if version_setting is None:
+            version_setting = SystemSetting(
+                key=TERMS_OF_SERVICE_VERSION_KEY,
+                value=str(DEFAULT_TERMS_OF_SERVICE_VERSION),
+                description=TERMS_OF_SERVICE_VERSION_DESCRIPTION,
+            )
+            self.db.add(version_setting)
+        self.db.flush()
+
+        try:
+            version = max(1, int(version_setting.value))
+        except ValueError:
+            version = DEFAULT_TERMS_OF_SERVICE_VERSION
+        return content_setting.value, version, content_setting
+
+    def set_terms_of_service(
+        self, content_html: str, updated_by: uuid.UUID
+    ) -> tuple[str, int, SystemSetting]:
+        _content, version, content_setting = self.get_terms_of_service()
+        version_setting = self.db.get(
+            SystemSetting, TERMS_OF_SERVICE_VERSION_KEY
+        )
+        assert version_setting is not None
+        content_setting.value = content_html
+        content_setting.updated_by = updated_by
+        version_setting.value = str(version + 1)
+        version_setting.updated_by = updated_by
+        self.db.commit()
+        self.db.refresh(content_setting)
+        return content_setting.value, version + 1, content_setting
 
     def set_daily_registration_limit(
         self, limit: int, updated_by: uuid.UUID

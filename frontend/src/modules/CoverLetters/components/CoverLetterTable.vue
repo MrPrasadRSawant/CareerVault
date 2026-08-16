@@ -63,9 +63,7 @@
       </template>
       <template #body-cell-file_name="props">
         <q-td :props="props">
-          <span class="cell-text">{{
-            props.row.file_name || "—"
-          }}</span>
+          <span class="cell-text">{{ props.row.file_name || "—" }}</span>
         </q-td>
       </template>
       <template #body-cell-content_preview="props">
@@ -76,9 +74,7 @@
         </q-td>
       </template>
       <template #body-cell-created_at="props">
-        <q-td :props="props">{{
-          formatDate(props.row.created_at)
-        }}</q-td>
+        <q-td :props="props">{{ formatDate(props.row.created_at) }}</q-td>
       </template>
       <template #body-cell-actions="props">
         <q-td :props="props" class="actions-cell">
@@ -119,9 +115,7 @@
                   clickable
                   @click="$emit('edit', props.row)"
                 >
-                  <q-item-section avatar
-                    ><q-icon name="edit"
-                  /></q-item-section>
+                  <q-item-section avatar><q-icon name="edit" /></q-item-section>
                   <q-item-section>Edit letter</q-item-section>
                 </q-item>
                 <q-separator />

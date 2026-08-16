@@ -11,6 +11,8 @@ def test_register(client):
             "email": "new@example.com",
             "full_name": "New User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     assert response.status_code == 201
@@ -25,6 +27,8 @@ def test_register_duplicate_email(client):
         "email": "dup@example.com",
         "full_name": "Dup User",
         "password": "password123",
+        "terms_accepted": True,
+        "terms_version": 1,
     }
     assert client.post("/api/v1/auth/register", json=payload).status_code == 201
     assert client.post("/api/v1/auth/register", json=payload).status_code == 409
@@ -37,6 +41,8 @@ def test_login_wrong_password(client):
             "email": "login@example.com",
             "full_name": "Login User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     response = client.post(

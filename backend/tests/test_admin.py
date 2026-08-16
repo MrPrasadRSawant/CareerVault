@@ -35,6 +35,8 @@ def test_registration_assigns_applicant_role(client):
             "email": "applicant@example.com",
             "full_name": "Job Applicant",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     assert response.status_code == 201
@@ -56,6 +58,8 @@ def test_shared_login_returns_each_users_role(client, db_session):
             "email": "candidate@example.com",
             "full_name": "Candidate",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     applicant_login = client.post(
@@ -79,6 +83,8 @@ def test_admin_overview_and_user_management(client, db_session):
             "email": "managed@example.com",
             "full_name": "Managed Applicant",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     applicant_id = register.json()["user"]["id"]

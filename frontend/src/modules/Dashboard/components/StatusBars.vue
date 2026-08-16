@@ -15,7 +15,10 @@
       >
         <div
           class="bar-fill"
-          :style="{ width: `${Math.min(100, Math.max(0, item.percent))}%`, background: item.color }"
+          :style="{
+            width: `${Math.min(100, Math.max(0, item.percent))}%`,
+            background: item.color
+          }"
         ></div>
       </div>
     </div>

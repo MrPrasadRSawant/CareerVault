@@ -32,7 +32,10 @@ def register(
 ) -> TokenWithUser:
     service = AuthService(db)
     user = service.register(
-        email=payload.email, full_name=payload.full_name, password=payload.password
+        email=payload.email,
+        full_name=payload.full_name,
+        password=payload.password,
+        terms_version=payload.terms_version,
     )
     return TokenWithUser(
         access_token=service.issue_token(

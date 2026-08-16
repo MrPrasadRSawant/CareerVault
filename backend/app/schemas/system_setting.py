@@ -46,3 +46,13 @@ class PasswordPolicyUpdate(BaseModel):
                 "Minimum password length cannot exceed maximum length"
             )
         return self
+
+
+class TermsOfServiceRead(BaseModel):
+    content_html: str
+    version: int
+    updated_at: datetime
+
+
+class TermsOfServiceUpdate(BaseModel):
+    content_html: str = Field(min_length=20, max_length=100_000)

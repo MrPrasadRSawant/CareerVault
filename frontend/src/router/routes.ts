@@ -14,6 +14,11 @@ const routes: RouteRecordRaw[] = [
     meta: { guestOnly: true }
   },
   {
+    path: "/terms-of-service",
+    name: "terms-of-service",
+    component: () => import("@/modules/Legal/TermsOfServicePage.vue")
+  },
+  {
     path: "/system-admin",
     component: () => import("@/layouts/SystemAdminLayout.vue"),
     meta: { requiresAdmin: true },

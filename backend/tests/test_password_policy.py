@@ -34,6 +34,8 @@ def register(client, email: str, password: str):
             "email": email,
             "full_name": "Password Policy User",
             "password": password,
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
 

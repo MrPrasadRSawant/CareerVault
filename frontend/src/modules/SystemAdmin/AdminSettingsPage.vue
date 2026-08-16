@@ -8,193 +8,267 @@
       </div>
     </header>
 
+    <q-tabs
+      v-model="activeTab"
+      no-caps
+      dense
+      align="left"
+      active-color="primary"
+      indicator-color="primary"
+      class="settings-tabs"
+    >
+      <q-tab name="registration" icon="how_to_reg" label="Registration" />
+      <q-tab name="security" icon="shield" label="Security" />
+      <q-tab name="terms" icon="gavel" label="Terms of Service" />
+    </q-tabs>
+
     <div v-if="loading" class="loading-state">
       <q-spinner color="primary" size="36px" />
       <span>Loading platform settings…</span>
     </div>
 
     <template v-else-if="settings">
-      <section class="usage-grid" aria-label="Today's registration usage">
-        <article class="metric-card">
-          <q-icon name="person_add" />
-          <div>
-            <span>Registered today</span>
-            <strong>
-              {{ settings.registrations_used_today.toLocaleString() }}
-            </strong>
-          </div>
-        </article>
-        <article class="metric-card">
-          <q-icon name="group_add" />
-          <div>
-            <span>Remaining today</span>
-            <strong>
-              {{ settings.registrations_remaining_today.toLocaleString() }}
-            </strong>
-          </div>
-        </article>
-        <article class="metric-card">
-          <q-icon name="event" />
-          <div>
-            <span>Counter date</span>
-            <strong>{{ settings.counter_date_utc }}</strong>
-            <small>UTC</small>
-          </div>
-        </article>
-      </section>
+      <div v-show="activeTab === 'registration'" class="settings-section">
+        <section class="usage-grid" aria-label="Today's registration usage">
+          <article class="metric-card">
+            <q-icon name="person_add" />
+            <div>
+              <span>Registered today</span>
+              <strong>
+                {{ settings.registrations_used_today.toLocaleString() }}
+              </strong>
+            </div>
+          </article>
+          <article class="metric-card">
+            <q-icon name="group_add" />
+            <div>
+              <span>Remaining today</span>
+              <strong>
+                {{ settings.registrations_remaining_today.toLocaleString() }}
+              </strong>
+            </div>
+          </article>
+          <article class="metric-card">
+            <q-icon name="event" />
+            <div>
+              <span>Counter date</span>
+              <strong>{{ settings.counter_date_utc }}</strong>
+              <small>UTC</small>
+            </div>
+          </article>
+        </section>
 
-      <section class="setting-card">
-        <div class="setting-copy">
-          <div class="setting-icon"><q-icon name="how_to_reg" /></div>
-          <div>
-            <h2>Daily registration limit</h2>
-            <p>
-              Maximum number of new applicant accounts that can be created in
-              one UTC calendar day. Existing users can still sign in when this
-              limit is reached.
-            </p>
+        <section class="setting-card">
+          <div class="setting-copy">
+            <div class="setting-icon"><q-icon name="how_to_reg" /></div>
+            <div>
+              <h2>Daily registration limit</h2>
+              <p>
+                Maximum number of new applicant accounts that can be created in
+                one UTC calendar day. Existing users can still sign in when this
+                limit is reached.
+              </p>
+            </div>
+          </div>
+
+          <q-form class="setting-form" @submit="save">
+            <q-input
+              v-model.number="dailyLimit"
+              type="number"
+              outlined
+              label="Accounts per day"
+              hint="Allowed range: 1 to 1,000,000"
+              :min="1"
+              :max="1000000"
+              :rules="[validateLimit]"
+            />
+            <q-btn
+              type="submit"
+              color="primary"
+              unelevated
+              no-caps
+              label="Save limit"
+              :loading="saving"
+              :disable="!hasChanges"
+            />
+          </q-form>
+
+          <div class="notice">
+            <q-icon name="info_outline" />
+            <span>
+              If today's usage already exceeds a newly lowered limit, new
+              registrations remain paused until the counter resets at 00:00 UTC.
+            </span>
+          </div>
+        </section>
+      </div>
+
+      <div v-show="activeTab === 'security'" class="settings-section">
+        <section v-if="securitySettings" class="setting-card">
+          <div class="setting-copy">
+            <div class="setting-icon security-icon">
+              <q-icon name="lock_clock" />
+            </div>
+            <div>
+              <h2>Failed login protection</h2>
+              <p>
+                Temporarily lock an account after consecutive invalid-password
+                attempts. A successful login resets the failure count.
+              </p>
+            </div>
+          </div>
+
+          <q-form class="setting-form security-form" @submit="saveSecurity">
+            <q-input
+              v-model.number="failedAttemptLimit"
+              type="number"
+              outlined
+              label="Failed attempts before lock"
+              hint="Allowed range: 1 to 100"
+              :min="1"
+              :max="100"
+              :rules="[validateAttemptLimit]"
+            />
+            <q-input
+              v-model.number="lockoutDurationMinutes"
+              type="number"
+              outlined
+              label="Lock duration in minutes"
+              hint="Allowed range: 1 to 1,440"
+              :min="1"
+              :max="1440"
+              :rules="[validateLockoutDuration]"
+            />
+            <q-btn
+              type="submit"
+              color="primary"
+              unelevated
+              no-caps
+              label="Save protection"
+              :loading="savingSecurity"
+              :disable="!hasSecurityChanges"
+            />
+          </q-form>
+
+          <div class="notice security-notice">
+            <q-icon name="shield" />
+            <span>
+              Updated values apply to newly created locks. Existing active locks
+              keep their current expiry. Every login attempt remains a separate
+              audit event.
+            </span>
+          </div>
+        </section>
+
+        <section v-if="passwordPolicy" class="setting-card">
+          <div class="setting-copy">
+            <div class="setting-icon password-icon">
+              <q-icon name="password" />
+            </div>
+            <div>
+              <h2>Password length</h2>
+              <p>
+                Set the accepted password character range for registration and
+                login. Both values must remain within 8–20 characters.
+              </p>
+            </div>
+          </div>
+
+          <q-form
+            class="setting-form security-form"
+            @submit="savePasswordPolicy"
+          >
+            <q-input
+              v-model.number="passwordMinimumLength"
+              type="number"
+              outlined
+              label="Minimum characters"
+              hint="Allowed range: 8 to 20"
+              :min="8"
+              :max="20"
+              :rules="[validatePasswordMinimum]"
+            />
+            <q-input
+              v-model.number="passwordMaximumLength"
+              type="number"
+              outlined
+              label="Maximum characters"
+              hint="Allowed range: 8 to 20"
+              :min="8"
+              :max="20"
+              :rules="[validatePasswordMaximum]"
+            />
+            <q-btn
+              type="submit"
+              color="primary"
+              unelevated
+              no-caps
+              label="Save password policy"
+              :loading="savingPasswordPolicy"
+              :disable="!hasPasswordPolicyChanges"
+            />
+          </q-form>
+
+          <div class="notice">
+            <q-icon name="info_outline" />
+            <span>
+              Changes apply immediately. Ensure existing users' passwords remain
+              inside the selected range so they can continue signing in.
+            </span>
+          </div>
+        </section>
+      </div>
+
+      <section
+        v-show="activeTab === 'terms'"
+        v-if="termsSettings"
+        class="setting-card terms-card"
+      >
+        <div class="terms-card-header">
+          <div class="setting-copy">
+            <div class="setting-icon terms-icon"><q-icon name="gavel" /></div>
+            <div>
+              <h2>Terms of Service</h2>
+              <p>
+                Maintain the legal terms shown to new users. Saving publishes a
+                new version; existing acceptance snapshots remain unchanged.
+              </p>
+            </div>
+          </div>
+          <div class="version-badge">
+            <span>Published version</span>
+            <strong>{{ termsSettings.version }}</strong>
           </div>
         </div>
 
-        <q-form class="setting-form" @submit="save">
-          <q-input
-            v-model.number="dailyLimit"
-            type="number"
-            outlined
-            label="Accounts per day"
-            hint="Allowed range: 1 to 1,000,000"
-            :min="1"
-            :max="1000000"
-            :rules="[validateLimit]"
-          />
+        <div class="terms-meta">
+          <q-icon name="history" />
+          Last updated {{ formatDateTime(termsSettings.updated_at) }}
+          <router-link :to="{ name: 'terms-of-service' }" target="_blank">
+            View public page <q-icon name="open_in_new" size="13px" />
+          </router-link>
+        </div>
+
+        <TermsEditor v-model="termsContent" />
+
+        <div class="terms-actions">
+          <div class="notice legal-notice">
+            <q-icon name="info_outline" />
+            <span>
+              Content is sanitized before publishing. Have final legal wording
+              reviewed by a qualified professional.
+            </span>
+          </div>
           <q-btn
-            type="submit"
             color="primary"
             unelevated
             no-caps
-            label="Save limit"
-            :loading="saving"
-            :disable="!hasChanges"
+            icon="publish"
+            label="Publish new version"
+            :loading="savingTerms"
+            :disable="!hasTermsChanges"
+            @click="saveTerms"
           />
-        </q-form>
-
-        <div class="notice">
-          <q-icon name="info_outline" />
-          <span>
-            If today's usage already exceeds a newly lowered limit, new
-            registrations remain paused until the counter resets at 00:00 UTC.
-          </span>
-        </div>
-      </section>
-
-      <section v-if="securitySettings" class="setting-card">
-        <div class="setting-copy">
-          <div class="setting-icon security-icon">
-            <q-icon name="lock_clock" />
-          </div>
-          <div>
-            <h2>Failed login protection</h2>
-            <p>
-              Temporarily lock an account after consecutive invalid-password
-              attempts. A successful login resets the failure count.
-            </p>
-          </div>
-        </div>
-
-        <q-form class="setting-form security-form" @submit="saveSecurity">
-          <q-input
-            v-model.number="failedAttemptLimit"
-            type="number"
-            outlined
-            label="Failed attempts before lock"
-            hint="Allowed range: 1 to 100"
-            :min="1"
-            :max="100"
-            :rules="[validateAttemptLimit]"
-          />
-          <q-input
-            v-model.number="lockoutDurationMinutes"
-            type="number"
-            outlined
-            label="Lock duration in minutes"
-            hint="Allowed range: 1 to 1,440"
-            :min="1"
-            :max="1440"
-            :rules="[validateLockoutDuration]"
-          />
-          <q-btn
-            type="submit"
-            color="primary"
-            unelevated
-            no-caps
-            label="Save protection"
-            :loading="savingSecurity"
-            :disable="!hasSecurityChanges"
-          />
-        </q-form>
-
-        <div class="notice security-notice">
-          <q-icon name="shield" />
-          <span>
-            Updated values apply to newly created locks. Existing active locks
-            keep their current expiry. Every login attempt remains a separate
-            audit event.
-          </span>
-        </div>
-      </section>
-
-      <section v-if="passwordPolicy" class="setting-card">
-        <div class="setting-copy">
-          <div class="setting-icon password-icon">
-            <q-icon name="password" />
-          </div>
-          <div>
-            <h2>Password length</h2>
-            <p>
-              Set the accepted password character range for registration and
-              login. Both values must remain within 8–20 characters.
-            </p>
-          </div>
-        </div>
-
-        <q-form class="setting-form security-form" @submit="savePasswordPolicy">
-          <q-input
-            v-model.number="passwordMinimumLength"
-            type="number"
-            outlined
-            label="Minimum characters"
-            hint="Allowed range: 8 to 20"
-            :min="8"
-            :max="20"
-            :rules="[validatePasswordMinimum]"
-          />
-          <q-input
-            v-model.number="passwordMaximumLength"
-            type="number"
-            outlined
-            label="Maximum characters"
-            hint="Allowed range: 8 to 20"
-            :min="8"
-            :max="20"
-            :rules="[validatePasswordMaximum]"
-          />
-          <q-btn
-            type="submit"
-            color="primary"
-            unelevated
-            no-caps
-            label="Save password policy"
-            :loading="savingPasswordPolicy"
-            :disable="!hasPasswordPolicyChanges"
-          />
-        </q-form>
-
-        <div class="notice">
-          <q-icon name="info_outline" />
-          <span>
-            Changes apply immediately. Ensure existing users' passwords remain
-            inside the selected range so they can continue signing in.
-          </span>
         </div>
       </section>
     </template>
@@ -214,8 +288,10 @@ import {
   adminApi,
   type LoginSecuritySettings,
   type PasswordPolicySettings,
-  type RegistrationSettings
+  type RegistrationSettings,
+  type TermsOfServiceSettings
 } from "@/api/admin";
+import TermsEditor from "./components/TermsEditor.vue";
 
 defineOptions({ name: "AdminSettingsPage" });
 
@@ -223,6 +299,9 @@ const $q = useQuasar();
 const settings = ref<RegistrationSettings | null>(null);
 const securitySettings = ref<LoginSecuritySettings | null>(null);
 const passwordPolicy = ref<PasswordPolicySettings | null>(null);
+const termsSettings = ref<TermsOfServiceSettings | null>(null);
+const termsContent = ref("");
+const activeTab = ref("registration");
 const dailyLimit = ref<number | null>(null);
 const failedAttemptLimit = ref<number | null>(null);
 const lockoutDurationMinutes = ref<number | null>(null);
@@ -232,6 +311,7 @@ const loading = ref(true);
 const saving = ref(false);
 const savingSecurity = ref(false);
 const savingPasswordPolicy = ref(false);
+const savingTerms = ref(false);
 
 const hasChanges = computed(
   () =>
@@ -253,6 +333,18 @@ const hasPasswordPolicyChanges = computed(
     (passwordMinimumLength.value !== passwordPolicy.value?.minimum_length ||
       passwordMaximumLength.value !== passwordPolicy.value?.maximum_length)
 );
+const hasTermsChanges = computed(
+  () =>
+    termsContent.value.trim().length >= 20 &&
+    termsContent.value !== termsSettings.value?.content_html
+);
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
 
 function validateLimit(value: number | null) {
   return (
@@ -266,10 +358,7 @@ function validateLimit(value: number | null) {
 
 function validateAttemptLimit(value: number | null) {
   return (
-    (value !== null &&
-      Number.isInteger(value) &&
-      value >= 1 &&
-      value <= 100) ||
+    (value !== null && Number.isInteger(value) && value >= 1 && value <= 100) ||
     "Enter a whole number from 1 to 100"
   );
 }
@@ -311,11 +400,16 @@ function validatePasswordMaximum(value: number | null) {
 async function load() {
   loading.value = true;
   try {
-    [settings.value, securitySettings.value, passwordPolicy.value] =
-      await Promise.all([
+    [
+      settings.value,
+      securitySettings.value,
+      passwordPolicy.value,
+      termsSettings.value
+    ] = await Promise.all([
       adminApi.registrationSettings(),
       adminApi.loginSecuritySettings(),
-      adminApi.passwordPolicySettings()
+      adminApi.passwordPolicySettings(),
+      adminApi.termsOfServiceSettings()
     ]);
     dailyLimit.value = settings.value.daily_registration_limit;
     failedAttemptLimit.value =
@@ -324,12 +418,36 @@ async function load() {
       securitySettings.value.lockout_duration_minutes;
     passwordMinimumLength.value = passwordPolicy.value.minimum_length;
     passwordMaximumLength.value = passwordPolicy.value.maximum_length;
+    termsContent.value = termsSettings.value.content_html;
   } catch {
     settings.value = null;
     securitySettings.value = null;
     passwordPolicy.value = null;
+    termsSettings.value = null;
   } finally {
     loading.value = false;
+  }
+}
+
+async function saveTerms() {
+  if (!hasTermsChanges.value) return;
+  savingTerms.value = true;
+  try {
+    termsSettings.value = await adminApi.updateTermsOfServiceSettings(
+      termsContent.value
+    );
+    termsContent.value = termsSettings.value.content_html;
+    $q.notify({
+      type: "positive",
+      message: `Terms of Service version ${termsSettings.value.version} published`
+    });
+  } catch {
+    $q.notify({
+      type: "negative",
+      message: "Could not publish the Terms of Service"
+    });
+  } finally {
+    savingTerms.value = false;
   }
 }
 
@@ -397,9 +515,14 @@ async function save() {
   }
   saving.value = true;
   try {
-    settings.value = await adminApi.updateRegistrationSettings(dailyLimit.value);
+    settings.value = await adminApi.updateRegistrationSettings(
+      dailyLimit.value
+    );
     dailyLimit.value = settings.value.daily_registration_limit;
-    $q.notify({ type: "positive", message: "Daily registration limit updated" });
+    $q.notify({
+      type: "positive",
+      message: "Daily registration limit updated"
+    });
   } catch {
     $q.notify({
       type: "negative",
@@ -421,6 +544,27 @@ onMounted(load);
 .page-header {
   max-width: 1080px;
   margin: 0 auto 22px;
+}
+.settings-tabs {
+  max-width: 1080px;
+  min-height: 48px;
+  margin: 0 auto 18px;
+  padding: 0 7px;
+  border: 1px solid #e1e6ec;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(31, 45, 61, 0.03);
+}
+.settings-tabs :deep(.q-tab) {
+  min-height: 47px;
+  padding: 0 18px;
+  color: #6d798b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.settings-section {
+  max-width: 1080px;
+  margin: 0 auto;
 }
 .eyebrow {
   color: #1769e0;
@@ -520,6 +664,72 @@ h1 {
   color: #7657c9;
   background: #f1edff;
 }
+.terms-icon {
+  color: #1769e0;
+  background: #e7f0ff;
+}
+.terms-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.version-badge {
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  border: 1px solid #dbe5f2;
+  border-radius: 9px;
+  text-align: right;
+  background: #f7faff;
+}
+.version-badge span,
+.version-badge strong {
+  display: block;
+}
+.version-badge span {
+  color: #8290a3;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.version-badge strong {
+  color: #1769e0;
+  font-size: 18px;
+}
+.terms-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 10px;
+  color: #8290a3;
+  font-size: 11px;
+}
+.terms-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  color: #1769e0;
+  font-weight: 650;
+  text-decoration: none;
+}
+.terms-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+.terms-actions .notice {
+  flex: 1;
+  margin-top: 0;
+}
+.terms-actions > .q-btn {
+  min-height: 45px;
+  border-radius: 8px;
+}
+.legal-notice .q-icon {
+  color: #8b5e00;
+}
 h2 {
   margin: 0 0 5px;
   font-size: 17px;
@@ -577,6 +787,9 @@ h2 {
   .settings-page {
     padding: 20px 14px;
   }
+  .settings-tabs {
+    overflow-x: auto;
+  }
   .usage-grid {
     grid-template-columns: 1fr;
   }
@@ -586,6 +799,18 @@ h2 {
   .setting-form .q-btn {
     width: 100%;
     margin-top: 8px;
+  }
+  .terms-card-header,
+  .terms-actions {
+    display: block;
+  }
+  .version-badge {
+    margin-top: 14px;
+    text-align: left;
+  }
+  .terms-actions > .q-btn {
+    width: 100%;
+    margin-top: 10px;
   }
 }
 </style>

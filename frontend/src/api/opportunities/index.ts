@@ -36,8 +36,6 @@ export const opportunityApi = {
   },
 
   bulkRemove(ids: string[]): Promise<{ deleted_count: number }> {
-    return api
-      .post("/opportunities/bulk-delete", { ids })
-      .then(r => r.data);
+    return api.post("/opportunities/bulk-delete", { ids }).then(r => r.data);
   }
 };

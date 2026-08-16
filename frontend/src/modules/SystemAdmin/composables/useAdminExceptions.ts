@@ -26,7 +26,9 @@ export function useAdminExceptions() {
   const detailLoading = ref(false);
   const error = ref<string | null>(null);
 
-  const maxPage = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
+  const maxPage = computed(() =>
+    Math.max(1, Math.ceil(total.value / PAGE_SIZE))
+  );
 
   async function loadLogs() {
     loading.value = true;

@@ -2,21 +2,30 @@
   <div class="cover-letter-editor">
     <div v-if="editor" class="editor-toolbar">
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isBold }]"
         @click="editor!.chain().focus().toggleBold().run()"
       >
         <q-icon name="format_bold" size="18px" />
       </q-btn>
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isItalic }]"
         @click="editor!.chain().focus().toggleItalic().run()"
       >
         <q-icon name="format_italic" size="18px" />
       </q-btn>
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isUnderline }]"
         @click="editor!.chain().focus().toggleUnderline().run()"
       >
@@ -24,14 +33,20 @@
       </q-btn>
       <q-separator vertical class="q-mx-xs" />
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isH1 }]"
         @click="editor!.chain().focus().toggleHeading({ level: 1 }).run()"
       >
         H1
       </q-btn>
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isH2 }]"
         @click="editor!.chain().focus().toggleHeading({ level: 2 }).run()"
       >
@@ -39,14 +54,20 @@
       </q-btn>
       <q-separator vertical class="q-mx-xs" />
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isBulletList }]"
         @click="editor!.chain().focus().toggleBulletList().run()"
       >
         <q-icon name="format_list_bulleted" size="18px" />
       </q-btn>
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isOrderedList }]"
         @click="editor!.chain().focus().toggleOrderedList().run()"
       >
@@ -54,29 +75,34 @@
       </q-btn>
       <q-separator vertical class="q-mx-xs" />
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         :class="['toolbar-btn', { 'toolbar-btn--active': isBlockquote }]"
         @click="editor!.chain().focus().toggleBlockquote().run()"
       >
         <q-icon name="format_quote" size="18px" />
       </q-btn>
-      <q-btn
-        flat dense no-caps unelevated
-        class="toolbar-btn"
-        @click="setLink"
-      >
+      <q-btn flat dense no-caps unelevated class="toolbar-btn" @click="setLink">
         <q-icon name="link" size="18px" />
       </q-btn>
       <q-separator vertical class="q-mx-xs" />
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         class="toolbar-btn"
         @click="editor!.chain().focus().setHorizontalRule().run()"
       >
         <q-icon name="horizontal_rule" size="18px" />
       </q-btn>
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         class="toolbar-btn"
         :disable="!editor!.can().undo()"
         @click="editor!.chain().focus().undo().run()"
@@ -84,7 +110,10 @@
         <q-icon name="undo" size="18px" />
       </q-btn>
       <q-btn
-        flat dense no-caps unelevated
+        flat
+        dense
+        no-caps
+        unelevated
         class="toolbar-btn"
         :disable="!editor!.can().redo()"
         @click="editor!.chain().focus().redo().run()"
@@ -92,7 +121,7 @@
         <q-icon name="redo" size="18px" />
       </q-btn>
     </div>
-    <EditorContent :editor="(editor as any)" class="editor-content" />
+    <EditorContent :editor="editor as any" class="editor-content" />
   </div>
 </template>
 
@@ -138,7 +167,9 @@ const editor = useEditor({
 
 const isBold = computed(() => editor.value?.isActive("bold") ?? false);
 const isItalic = computed(() => editor.value?.isActive("italic") ?? false);
-const isUnderline = computed(() => editor.value?.isActive("underline") ?? false);
+const isUnderline = computed(
+  () => editor.value?.isActive("underline") ?? false
+);
 const isH1 = computed(
   () => editor.value?.isActive("heading", { level: 1 }) ?? false
 );

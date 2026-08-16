@@ -17,6 +17,8 @@ def register(client, email: str):
             "email": email,
             "full_name": "Limited Applicant",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
 

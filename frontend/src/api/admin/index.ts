@@ -23,7 +23,8 @@ import type {
   AuthSessionStatus,
   LoginSecuritySettings,
   PasswordPolicySettings,
-  RegistrationSettings
+  RegistrationSettings,
+  TermsOfServiceSettings
 } from "./types";
 
 export type {
@@ -49,7 +50,8 @@ export type {
   AuthSessionStatus,
   LoginSecuritySettings,
   PasswordPolicySettings,
-  RegistrationSettings
+  RegistrationSettings,
+  TermsOfServiceSettings
 };
 
 export const adminApi = {
@@ -132,6 +134,18 @@ export const adminApi = {
         minimum_length: minimumLength,
         maximum_length: maximumLength
       })
+      .then(r => r.data);
+  },
+
+  termsOfServiceSettings(): Promise<TermsOfServiceSettings> {
+    return api.get("/admin/settings/terms-of-service").then(r => r.data);
+  },
+
+  updateTermsOfServiceSettings(
+    contentHtml: string
+  ): Promise<TermsOfServiceSettings> {
+    return api
+      .patch("/admin/settings/terms-of-service", { content_html: contentHtml })
       .then(r => r.data);
   },
 

@@ -22,4 +22,11 @@ export interface ResumeFilters {
   uploadedTo: string;
 }
 
-export type ResumeExportColumnKey = "name" | "version" | "file_type" | "file_size" | "applications" | "is_active" | "created_at";
+export type ResumeExportColumnKey =
+  | "name"
+  | "version"
+  | "file_type"
+  | "file_size"
+  | "applications"
+  | "is_active"
+  | "created_at";

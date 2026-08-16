@@ -1,8 +1,10 @@
 import uuid
 from datetime import datetime, timezone
 
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.html_sanitizer import sanitize_rich_text
 from app.models.system_setting import SystemSetting
 from app.repositories.system_setting_repository import (
     FAILED_LOGIN_ATTEMPT_LIMIT_KEY,
@@ -16,6 +18,7 @@ from app.schemas.system_setting import (
     PasswordPolicyAdminRead,
     PasswordPolicyRead,
     RegistrationSettingsRead,
+    TermsOfServiceRead,
 )
 
 
@@ -115,3 +118,23 @@ class SystemSettingService:
             updated_by=updated_by,
         )
         return self.password_policy_admin()
+
+    def terms_of_service(self) -> TermsOfServiceRead:
+        content, version, setting = self.repository.get_terms_of_service()
+        return TermsOfServiceRead(
+            content_html=content,
+            version=version,
+            updated_at=setting.updated_at,
+        )
+
+    def update_terms_of_service(
+        self, content_html: str, updated_by: uuid.UUID
+    ) -> TermsOfServiceRead:
+        sanitized = sanitize_rich_text(content_html)
+        if len(sanitized) < 20:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Terms of Service content cannot be empty",
+            )
+        self.repository.set_terms_of_service(sanitized, updated_by)
+        return self.terms_of_service()

@@ -48,10 +48,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
-  (
-    event: "save",
-    value: { name: string; content: string | null }
-  ): void;
+  (event: "save", value: { name: string; content: string | null }): void;
 }>();
 
 const emptyForm = { name: "", content: "" };

@@ -29,10 +29,7 @@ export function defaultCoverLetterFilters(): CoverLetterFilters {
   return { search: "", createdFrom: "", createdTo: "" };
 }
 
-export function tabMatches(
-  row: CoverLetter,
-  tab: CoverLetterTabKey
-): boolean {
+export function tabMatches(row: CoverLetter, tab: CoverLetterTabKey): boolean {
   if (tab === "all") return true;
   if (tab === "with-content") return !!row.content;
   return !row.content;
@@ -42,7 +39,9 @@ export function csvCell(value: unknown): string {
   const text =
     value === null || value === undefined
       ? ""
-      : typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+      : typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
         ? String(value)
         : "";
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;

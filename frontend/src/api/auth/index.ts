@@ -11,10 +11,17 @@ export const authApi = {
   register(
     email: string,
     full_name: string,
-    password: string
+    password: string,
+    termsVersion: number
   ): Promise<TokenWithUser> {
     return api
-      .post("/auth/register", { email, full_name, password })
+      .post("/auth/register", {
+        email,
+        full_name,
+        password,
+        terms_accepted: true,
+        terms_version: termsVersion
+      })
       .then(r => r.data);
   },
 

@@ -1,5 +1,10 @@
 import type { Resume } from "@/api/resumes";
-import type { ResumeExportColumnKey, ResumeFilters, ResumeRow, ResumeTabKey } from "./types";
+import type {
+  ResumeExportColumnKey,
+  ResumeFilters,
+  ResumeRow,
+  ResumeTabKey
+} from "./types";
 
 export const resumeTabs: Array<{ key: ResumeTabKey; label: string }> = [
   { key: "all", label: "All" },
@@ -8,7 +13,10 @@ export const resumeTabs: Array<{ key: ResumeTabKey; label: string }> = [
   { key: "unattached", label: "Unattached" }
 ];
 
-export const resumeExportColumns: Array<{ key: ResumeExportColumnKey; label: string }> = [
+export const resumeExportColumns: Array<{
+  key: ResumeExportColumnKey;
+  label: string;
+}> = [
   { key: "name", label: "Resume name" },
   { key: "version", label: "Version" },
   { key: "file_type", label: "File type" },
@@ -19,13 +27,22 @@ export const resumeExportColumns: Array<{ key: ResumeExportColumnKey; label: str
 ];
 
 export function defaultResumeFilters(): ResumeFilters {
-  return { search: "", fileType: "", attachment: "all", uploadedFrom: "", uploadedTo: "" };
+  return {
+    search: "",
+    fileType: "",
+    attachment: "all",
+    uploadedFrom: "",
+    uploadedTo: ""
+  };
 }
 
-export function fileTypeLabel(resume: Pick<Resume, "content_type" | "file_name">): string {
+export function fileTypeLabel(
+  resume: Pick<Resume, "content_type" | "file_name">
+): string {
   const contentType = resume.content_type?.toLowerCase() ?? "";
   if (contentType.includes("pdf")) return "PDF";
-  if (contentType.includes("word") || contentType.includes("document")) return "DOCX";
+  if (contentType.includes("word") || contentType.includes("document"))
+    return "DOCX";
   const extension = resume.file_name?.split(".").pop()?.toUpperCase();
   return extension && extension.length <= 5 ? extension : "FILE";
 }
@@ -45,19 +62,35 @@ export function tabMatches(row: ResumeRow, tab: ResumeTabKey): boolean {
 }
 
 export function csvCell(value: unknown): string {
-  const text = value === null || value === undefined ? "" : typeof value === "string" || typeof value === "number" || typeof value === "boolean" ? String(value) : "";
+  const text =
+    value === null || value === undefined
+      ? ""
+      : typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+        ? String(value)
+        : "";
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-export function exportValue(row: ResumeRow, key: ResumeExportColumnKey): string {
+export function exportValue(
+  row: ResumeRow,
+  key: ResumeExportColumnKey
+): string {
   switch (key) {
-    case "name": return row.name;
-    case "version": return row.version ?? "";
-    case "file_type": return fileTypeLabel(row);
-    case "file_size": return formatFileSize(row.file_size);
-    case "applications": return String(row.linkedApplications.length);
-    case "is_active": return row.is_active ? "Yes" : "No";
-    case "created_at": return row.created_at;
+    case "name":
+      return row.name;
+    case "version":
+      return row.version ?? "";
+    case "file_type":
+      return fileTypeLabel(row);
+    case "file_size":
+      return formatFileSize(row.file_size);
+    case "applications":
+      return String(row.linkedApplications.length);
+    case "is_active":
+      return row.is_active ? "Yes" : "No";
+    case "created_at":
+      return row.created_at;
   }
 }
-

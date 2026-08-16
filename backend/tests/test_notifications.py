@@ -100,6 +100,8 @@ def test_notifications_are_user_scoped(client, auth_headers):
             "email": "notification-other@example.com",
             "full_name": "Other User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     login = client.post(

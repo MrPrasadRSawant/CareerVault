@@ -23,6 +23,9 @@ class UserRepository(BaseRepository[User]):
         hashed_password: str,
         registration_date: date,
         daily_limit: int,
+        terms_accepted_at: datetime,
+        terms_accepted_version: int,
+        terms_accepted_content: str,
     ) -> User | None:
         settings_repo = SystemSettingRepository(self.db)
         if not settings_repo.consume_daily_registration_slot(
@@ -36,6 +39,9 @@ class UserRepository(BaseRepository[User]):
             full_name=full_name,
             hashed_password=hashed_password,
             role=UserRole.JOB_APPLICANT,
+            terms_accepted_at=terms_accepted_at,
+            terms_accepted_version=terms_accepted_version,
+            terms_accepted_content=terms_accepted_content,
         )
         self.db.add(user)
         self.db.commit()

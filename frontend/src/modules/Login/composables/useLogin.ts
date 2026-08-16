@@ -69,9 +69,7 @@ export function useLogin() {
       $q.notify({
         type: "negative",
         message:
-          typeof detail === "string"
-            ? detail
-            : "Incorrect email or password"
+          typeof detail === "string" ? detail : "Incorrect email or password"
       });
     } finally {
       submitting.value = false;

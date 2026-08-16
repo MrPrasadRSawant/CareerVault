@@ -26,7 +26,8 @@ export function useCoverLetters() {
       if (search && !haystack.includes(search)) return false;
       if (!tabMatches(row, activeTab.value)) return false;
       const createdDate = row.created_at.slice(0, 10);
-      if (filters.createdFrom && createdDate < filters.createdFrom) return false;
+      if (filters.createdFrom && createdDate < filters.createdFrom)
+        return false;
       if (filters.createdTo && createdDate > filters.createdTo) return false;
       return true;
     })
@@ -34,7 +35,8 @@ export function useCoverLetters() {
 
   const tabCounts = computed<Record<CoverLetterTabKey, number>>(() => ({
     all: letters.value.length,
-    "with-content": letters.value.filter(row => tabMatches(row, "with-content")).length,
+    "with-content": letters.value.filter(row => tabMatches(row, "with-content"))
+      .length,
     empty: letters.value.filter(row => tabMatches(row, "empty")).length
   }));
 

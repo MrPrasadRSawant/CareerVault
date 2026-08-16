@@ -54,6 +54,8 @@ def test_opportunities_are_user_scoped(client, auth_headers):
             "email": "other@example.com",
             "full_name": "Other User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     other_login = client.post(
@@ -87,6 +89,8 @@ def test_bulk_delete_opportunities_is_owner_scoped(client, auth_headers):
             "email": "bulk-other@example.com",
             "full_name": "Bulk Other User",
             "password": "password123",
+            "terms_accepted": True,
+            "terms_version": 1,
         },
     )
     other_login = client.post(

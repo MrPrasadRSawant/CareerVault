@@ -34,6 +34,8 @@ from app.schemas.system_setting import (
     PasswordPolicyUpdate,
     RegistrationSettingsRead,
     RegistrationSettingsUpdate,
+    TermsOfServiceRead,
+    TermsOfServiceUpdate,
 )
 from app.services.system_setting_service import SystemSettingService
 
@@ -129,6 +131,32 @@ def update_password_policy_settings(
     return SystemSettingService(db).update_password_policy(
         payload.minimum_length,
         payload.maximum_length,
+        current_admin.id,
+    )
+
+
+@router.get(
+    "/settings/terms-of-service",
+    response_model=TermsOfServiceRead,
+)
+def terms_of_service_settings(
+    db: Session = Depends(get_db),
+    _current_admin: User = Depends(get_current_system_admin),
+) -> TermsOfServiceRead:
+    return SystemSettingService(db).terms_of_service()
+
+
+@router.patch(
+    "/settings/terms-of-service",
+    response_model=TermsOfServiceRead,
+)
+def update_terms_of_service_settings(
+    payload: TermsOfServiceUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_system_admin),
+) -> TermsOfServiceRead:
+    return SystemSettingService(db).update_terms_of_service(
+        payload.content_html,
         current_admin.id,
     )
 

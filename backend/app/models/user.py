@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, Integer, String
+from sqlalchemy import Boolean, DateTime, Enum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UuidPk
@@ -19,6 +19,15 @@ class User(UuidPk, Base, TimestampMixin):
     )
     locked_until: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
+    )
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    terms_accepted_version: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    terms_accepted_content: Mapped[str | None] = mapped_column(
+        Text, nullable=True
     )
     role: Mapped[UserRole] = mapped_column(
         Enum(
